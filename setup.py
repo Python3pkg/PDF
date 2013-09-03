@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-try:
-   from distutils.command.build_py import build_py_2to3 as build_py
-except ImportError:
-   from distutils.command.build_py import build_py
 import re
+
+import setuptools
 
 long_description = """
 A Pure-Python library built as a PDF toolkit.  It is capable of:
@@ -32,7 +29,7 @@ if mo:
 else:
    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE))
 
-setup(
+setuptools.setup(
     name="PDF",
     version=verstr,
     description="PDF toolkit",
@@ -52,5 +49,5 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
     packages=["PDF"],
-    cmdclass = {'build_py': build_py},
+    use_2to3=True,
 )
