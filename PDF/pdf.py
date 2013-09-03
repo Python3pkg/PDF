@@ -821,9 +821,11 @@ class PdfFileReader(object):
         # read the entire object stream into memory
         debug = False
         stmnum,idx = self.xref_objStm[indirectReference.idnum]
-        if debug: print "Here1: %s %s"%(stmnum, idx)
+        if debug:
+            print("Here1: %s %s"%(stmnum, idx))
         objStm = IndirectObject(stmnum, 0, self).getObject()
-        if debug: print "Here2: objStm=%s.. stmnum=%s data=%s"%(objStm, stmnum, objStm.getData())
+        if debug:
+            print("Here2: objStm=%s.. stmnum=%s data=%s"%(objStm, stmnum, objStm.getData()))
         # This is an xref to a stream, so its type better be a stream
         assert objStm['/Type'] == '/ObjStm'
         # /N is the number of indirect objects in the stream
@@ -847,7 +849,7 @@ class PdfFileReader(object):
                 streamData.seek(0,0)
                 lines = streamData.readlines()
                 for i in range(0,len(lines)):
-                    print lines[i]
+                    print(lines[i])
                 streamData.seek(pos,0)
             try:
                 obj = readObject(streamData, self)
@@ -870,7 +872,8 @@ class PdfFileReader(object):
 
     def getObject(self, indirectReference):
         debug = False
-        if debug: print "looking at:",indirectReference.idnum,indirectReference.generation
+        if debug:
+            print("looking at:",indirectReference.idnum,indirectReference.generation)
         retval = self.cacheGetIndirectObject(indirectReference.generation,
                                                 indirectReference.idnum)
         if retval != None:
@@ -881,7 +884,8 @@ class PdfFileReader(object):
         elif indirectReference.generation in self.xref and \
                 indirectReference.idnum in self.xref[indirectReference.generation]:
             start = self.xref[indirectReference.generation][indirectReference.idnum]
-            if debug: print "  Uncompressed Object", indirectReference.idnum,indirectReference.generation, ":", start
+            if debug:
+                print("  Uncompressed Object", indirectReference.idnum,indirectReference.generation, ":", start)
             self.stream.seek(start, 0)
             idnum, generation = self.readObjectHeader(self.stream)
             if idnum != indirectReference.idnum and self.xrefIndex:
@@ -956,7 +960,8 @@ class PdfFileReader(object):
         debug = False
         out = self.resolvedObjects.get((generation, idnum))
         if debug and out: print "cache hit: %d %d"%(idnum, generation)
-        elif debug: print "cache miss: %d %d"%(idnum, generation)
+        elif debug:
+            print("cache miss: %d %d"%(idnum, generation))
         return out
 
     def cacheIndirectObject(self, generation, idnum, obj):
@@ -970,16 +975,19 @@ class PdfFileReader(object):
 
     def read(self, stream):
         debug = False
-        if debug: print ">>read", stream
+        if debug:
+            print(">>read", stream)
         # start at the end:
         stream.seek(-1, 2)
         if not stream.tell():
             raise utils.PdfReadError('Cannot read an empty file')
         line = b_('')
-        if debug: print "  line:",line
+        if debug:
+            print("  line:",line)
         while not line:
             line = self.readNextEndLine(stream)
-        if debug: print "  line:",line
+        if debug:
+            print("  line:",line)
         if line[:5] != b_("%%EOF"):
             raise utils.PdfReadError, "EOF marker not found"
 
@@ -1086,7 +1094,8 @@ class PdfFileReader(object):
                 # Index pairs specify the subsections in the dictionary. If
                 # none create one subsection that spans everything.
                 idx_pairs = xrefstream.get("/Index", [0, xrefstream.get("/Size")])
-                if debug: print "read idx_pairs=%s"%list(self._pairs(idx_pairs))
+                if debug:
+                    print("read idx_pairs=%s"%list(self._pairs(idx_pairs)))
                 entrySizes = xrefstream.get("/W")
                 assert len(entrySizes) >= 3
                 if self.strict and len(entrySizes) > 3:
@@ -1130,16 +1139,18 @@ class PdfFileReader(object):
                                 self.xref[generation] = {}
                             if not used_before(num, generation):
                                 self.xref[generation][num] = byte_offset
-                                if debug: print "XREF Uncompressed: %s %s"%(
-                                                num, generation)
+                                if debug:
+                                    print("XREF Uncompressed: %s %s"%(
+                                                num, generation))
                         elif xref_type == 2:
                             # compressed objects
                             objstr_num = getEntry(1)
                             obstr_idx = getEntry(2)
                             generation = 0 # PDF spec table 18, generation is 0
                             if not used_before(num, generation):
-                                if debug: print "XREF Compressed: %s %s %s"%(
-                                        num, objstr_num, obstr_idx)
+                                if debug:
+                                    print("XREF Compressed: %s %s %s"%(
+                                        num, objstr_num, obstr_idx))
                                 self.xref_objStm[num] = (objstr_num, obstr_idx)
                         elif self.strict:
                             raise utils.PdfReadError("Unknown xref type: %s"%
@@ -1195,11 +1206,13 @@ class PdfFileReader(object):
 
     def readNextEndLine(self, stream):
         debug = False
-        if debug: print ">>readNextEndLine"
+        if debug:
+            print(">>readNextEndLine")
         line = b_("")
         while True:
             x = stream.read(1)
-            if debug: print "  x:",x,"%x"%ord(x)
+            if debug:
+                print("  x:",x,"%x"%ord(x))
             stream.seek(-2, 1)
             if x == b_('\n') or x == b_('\r'): ## \n = LF; \r = CR
                 crlf = False
@@ -1215,10 +1228,13 @@ class PdfFileReader(object):
                 stream.seek(2 if crlf else 1, 1) #if using CR+LF, go back 2 bytes, else 1
                 break
             else:
-                if debug: print "  x is neither"
+                if debug:
+                    print("  x is neither")
                 line = x + line
-                if debug: print "  RNEL line:",line
-        if debug: print "leaving RNEL"
+                if debug:
+                    print("  RNEL line:",line)
+        if debug:
+            print("leaving RNEL")
         return line
 
     ##
@@ -2206,5 +2222,3 @@ def _alg35(password, rev, keylen, owner_entry, p_entry, id1_entry, metadata_encr
 #
 #    output.addPage(page1)
 #    output.write(file("test\\merge-test.pdf", "wb"))
-
-
