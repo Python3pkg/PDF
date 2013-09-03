@@ -9,7 +9,7 @@ import re
 
 long_description = """
 A Pure-Python library built as a PDF toolkit.  It is capable of:
-    
+
 - extracting document information (title, author, ...),
 - splitting documents page by page,
 - merging documents page by page,
@@ -23,7 +23,7 @@ objects rather than file streams, allowing for PDF manipulation in memory.
 It is therefore a useful tool for websites that manage or manipulate PDFs.
 """
 
-VERSIONFILE="PyPDF2/_version.py"
+VERSIONFILE="PDF/_version.py"
 verstrline = open(VERSIONFILE, "rt").read()
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
 mo = re.search(VSRE, verstrline, re.M)
@@ -33,16 +33,16 @@ else:
    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE))
 
 setup(
-        name="PyPDF2",
+        name="PDF",
         version=verstr,
         description="PDF toolkit",
         long_description=long_description,
         author="Mathieu Fenniak",
         author_email="biziqe@mathieu.fenniak.net",
-        maintainer="Phaseit, Inc.",
-        maintainer_email="PyPDF2@phaseit.net",
-        url="http://mstamy2.github.com/PyPDF2",
-        download_url="http://github.com/mstamy2/PyPDF2/tarball/master",
+        maintainer="Jason R. Coombs",
+        maintainer_email="jaraco@jaraco.com",
+        url="https://github.com/jaraco/PDF",
+        download_url="https://github.com/jaraco/PDF/tarball/master",
         classifiers = [
             "Development Status :: 5 - Production/Stable",
             "Intended Audience :: Developers",
@@ -52,7 +52,6 @@ setup(
             "Operating System :: OS Independent",
             "Topic :: Software Development :: Libraries :: Python Modules",
             ],
-        packages=["PyPDF2"],
+        packages=["PDF"],
         cmdclass = {'build_py': build_py},
     )
-
