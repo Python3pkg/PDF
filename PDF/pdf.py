@@ -36,11 +36,7 @@ A pure-Python PDF library with very minimal capabilities.  It was designed to
 be able to split and merge PDF files by page, and that's about all it can do.
 It may be a solid base for future PDF file work in Python.
 """
-__author__ = "Mathieu Fenniak"
-__author_email__ = "biziqe@mathieu.fenniak.net"
-
 from __future__ import print_function
-
 
 import math
 import struct
@@ -48,20 +44,19 @@ import sys
 import warnings
 import time
 import random
-import string
-from sys import version_info
 from hashlib import md5
 try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
 
-from . import filters
 from . import utils
 from .generic import *
 from .utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
 from .utils import b_
 
+__author__ = "Mathieu Fenniak"
+__author_email__ = "biziqe@mathieu.fenniak.net"
 
 warnings.formatwarning = utils._formatwarning
 
