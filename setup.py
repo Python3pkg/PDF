@@ -29,7 +29,7 @@ if mo:
 else:
    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE))
 
-setuptools.setup(
+setup_params = dict(
     name="PDF",
     version=verstr,
     description="PDF toolkit",
@@ -51,3 +51,6 @@ setuptools.setup(
     packages=["PDF"],
     use_2to3=True,
 )
+
+if __name__ == '__main__':
+    setuptools.setup(**setup_params)
