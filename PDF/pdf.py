@@ -466,7 +466,6 @@ class PdfFileWriter(object):
 
         return bookmarkRef
 
-
     def addBookmark(self, title, pagenum, parent=None):
         """
         Add a bookmark to the pdf, using the specified title and pointing at
@@ -476,8 +475,8 @@ class PdfFileWriter(object):
         pageRef = self.getObject(self._pages)['/Kids'][pagenum]
         action = DictionaryObject()
         action.update({
-            NameObject('/D') : ArrayObject([pageRef, NameObject('/FitH'), NumberObject(826)]),
-            NameObject('/S') : NameObject('/GoTo')
+            NameObject('/D'): ArrayObject([pageRef, NameObject('/FitH'), NumberObject(826)]),
+            NameObject('/S'): NameObject('/GoTo')
         })
         actionRef = self._addObject(action)
 
@@ -486,12 +485,11 @@ class PdfFileWriter(object):
         if parent is None:
             parent = outlineRef
 
-
         bookmark = TreeObject()
 
         bookmark.update({
-            NameObject('/A') : actionRef,
-            NameObject('/Title') : createStringObject(title),
+            NameObject('/A'): actionRef,
+            NameObject('/Title'): createStringObject(title),
         })
 
         bookmarkRef = self._addObject(bookmark)
@@ -513,8 +511,8 @@ class PdfFileWriter(object):
         pageRef = self.getObject(self._pages)['/Kids'][pagenum]
         dest = DictionaryObject()
         dest.update({
-            NameObject('/D') : ArrayObject([pageRef, NameObject('/FitH'), NumberObject(826)]),
-            NameObject('/S') : NameObject('/GoTo')
+            NameObject('/D'): ArrayObject([pageRef, NameObject('/FitH'), NumberObject(826)]),
+            NameObject('/S'): NameObject('/GoTo')
         })
 
         destRef = self._addObject(dest)
@@ -523,7 +521,6 @@ class PdfFileWriter(object):
         nd.extend([title, destRef])
 
         return destRef
-
 
 
 ##
@@ -658,7 +655,7 @@ class PdfFileReader(object):
     # <p>
     # Stability: Added in v1.10, will exist for all future v1.x releases.
     namedDestinations = property(lambda self:
-                                  self.getNamedDestinations(), None, None)
+        self.getNamedDestinations(), None, None)
 
     ##
     # Retrieves the named destinations present in the document.
@@ -725,7 +722,7 @@ class PdfFileReader(object):
             self._namedDests = self.getNamedDestinations()
 
         if node is None:
-          return outlines
+            return outlines
 
         # see if there are any more outlines
         while 1:
@@ -756,14 +753,14 @@ class PdfFileReader(object):
 
         if "/A" in node and "/Title" in node:
             # Action, section 8.5 (only type GoTo supported)
-            title  = node["/Title"]
+            title = node["/Title"]
             action = node["/A"]
             if action["/S"] == "/GoTo":
                 dest = action["/D"]
         elif "/Dest" in node and "/Title" in node:
             # Destination, section 8.2.1
             title = node["/Title"]
-            dest  = node["/Dest"]
+            dest = node["/Dest"]
 
         # if destination found, then create outline
         if dest:
@@ -857,7 +854,7 @@ class PdfFileReader(object):
                 # Stream object cannot be read. Normally, a critical error, but
                 # Adobe Reader doesn't complain, so continue (in strict mode?)
                 e = sys.exc_info()[1]
-                warnings.warn("Invalid stream (index %d) within object %d %d: %s" % \
+                warnings.warn("Invalid stream (index %d) within object %d %d: %s" %
                       (i, indirectReference.idnum,indirectReference.generation, e.message), utils.PdfReadWarning)
 
                 if self.strict:
@@ -869,17 +866,16 @@ class PdfFileReader(object):
         if self.strict: raise utils.PdfReadError("This is a fatal error in strict mode.")
         return NullObject()
 
-
     def getObject(self, indirectReference):
         debug = False
         if debug:
             print("looking at:",indirectReference.idnum,indirectReference.generation)
         retval = self.cacheGetIndirectObject(indirectReference.generation,
-                                                indirectReference.idnum)
+            indirectReference.idnum)
         if retval != None:
             return retval
         if indirectReference.generation == 0 and \
-                        indirectReference.idnum in self.xref_objStm:
+                indirectReference.idnum in self.xref_objStm:
             retval = self._getObjectFromStream(indirectReference)
         elif indirectReference.generation in self.xref and \
                 indirectReference.idnum in self.xref[indirectReference.generation]:
@@ -891,13 +887,13 @@ class PdfFileReader(object):
             if idnum != indirectReference.idnum and self.xrefIndex:
                 # Xref table probably had bad indexes due to not being zero-indexed
                 if self.strict:
-                    raise utils.PdfReadError("Expected object ID (%d %d) does not match actual (%d %d); xref table not zero-indexed." \
-                                     % (indirectReference.idnum, indirectReference.generation, idnum, generation))
+                    raise utils.PdfReadError("Expected object ID (%d %d) does not match actual (%d %d); xref table not zero-indexed."
+                        % (indirectReference.idnum, indirectReference.generation, idnum, generation))
                 else: pass # xref table is corrected in non-strict mode
             elif idnum != indirectReference.idnum:
                 # some other problem
-                raise utils.PdfReadError("Expected object ID (%d %d) does not match actual (%d %d)." \
-                                         % (indirectReference.idnum, indirectReference.generation, idnum, generation))
+                raise utils.PdfReadError("Expected object ID (%d %d) does not match actual (%d %d)."
+                    % (indirectReference.idnum, indirectReference.generation, idnum, generation))
             assert generation == indirectReference.generation
             retval = readObject(self.stream, self)
 
@@ -943,17 +939,19 @@ class PdfFileReader(object):
         # tables that are off by whitespace bytes.
         extra = False
         utils.skipOverComment(stream)
-        extra |= utils.skipOverWhitespace(stream); stream.seek(-1, 1)
+        extra |= utils.skipOverWhitespace(stream)
+        stream.seek(-1, 1)
         idnum = readUntilWhitespace(stream)
-        extra |= utils.skipOverWhitespace(stream); stream.seek(-1, 1)
+        extra |= utils.skipOverWhitespace(stream)
+        stream.seek(-1, 1)
         generation = readUntilWhitespace(stream)
         obj = stream.read(3)
         readNonWhitespace(stream)
         stream.seek(-1, 1)
         if (extra and self.strict):
             #not a fatal error
-            warnings.warn("Superfluous whitespace found in object header %s %s" % \
-                          (idnum, generation), utils.PdfReadWarning)
+            warnings.warn("Superfluous whitespace found in object header %s %s" %
+                (idnum, generation), utils.PdfReadWarning)
         return int(idnum), int(generation)
 
     def cacheGetIndirectObject(self, generation, idnum):
@@ -1013,15 +1011,15 @@ class PdfFileReader(object):
                     raise utils.PdfReadError, "xref table read error"
                 readNonWhitespace(stream)
                 stream.seek(-1, 1)
-                firsttime = True; # check if the first time looking at the xref table
+                firsttime = True # check if the first time looking at the xref table
                 while 1:
                     num = readObject(stream, self)
                     if firsttime and num != 0:
-                         self.xrefIndex = num
-                         warnings.warn("Xref table not zero-indexed. ID numbers for objects will %sbe corrected." % \
-                                       ("" if not self.strict else "not "), utils.PdfReadWarning)
-                         #if table not zero indexed, could be due to error from when PDF was created
-                         #which will lead to mismatched indices later on
+                        self.xrefIndex = num
+                        warnings.warn("Xref table not zero-indexed. ID numbers for objects will %sbe corrected." %
+                            ("" if not self.strict else "not "), utils.PdfReadWarning)
+                        #if table not zero indexed, could be due to error from when PDF was created
+                        #which will lead to mismatched indices later on
                     firsttime = False
                     readNonWhitespace(stream)
                     stream.seek(-1, 1)
@@ -1109,13 +1107,15 @@ class PdfFileReader(object):
 
                     # PDF Spec Table 17: A value of zero for an element in the
                     # W array indicates...the default value shall be used
-                    if i == 0:  return 1 # First value defaults to 1
-                    else:       return 0
+                    if i == 0:
+                        return 1 # First value defaults to 1
+                    else:
+                        return 0
 
                 def used_before(num, generation):
                     # We move backwards through the xrefs, don't replace any.
                     return num in self.xref.get(generation, []) or \
-                            num in self.xref_objStm
+                        num in self.xref_objStm
 
                 # Iterate through each subsection
                 last_end = 0
@@ -1154,7 +1154,7 @@ class PdfFileReader(object):
                                 self.xref_objStm[num] = (objstr_num, obstr_idx)
                         elif self.strict:
                             raise utils.PdfReadError("Unknown xref type: %s"%
-                                                        xref_type)
+                                xref_type)
 
                 trailerKeys = "/Root", "/Encrypt", "/Info", "/ID"
                 for key in trailerKeys:
@@ -1190,11 +1190,12 @@ class PdfFileReader(object):
                         self._zeroXref(gen)
                         break
                     #if not, then either it's just plain wrong, or the non-zero-index is actually correct
-            stream.seek(loc, 0) #return to where it was
-
+            stream.seek(loc, 0) # return to where it was
 
     def _zeroXref(self, generation):
-        self.xref[generation] = dict( (k-self.xrefIndex,v) for (k,v) in self.xref[generation].iteritems() )
+        self.xref[generation] = dict(
+            (k-self.xrefIndex,v)
+            for (k,v) in self.xref[generation].iteritems())
 
     def _pairs(self, array):
         i = 0
@@ -1214,7 +1215,7 @@ class PdfFileReader(object):
             if debug:
                 print("  x:",x,"%x"%ord(x))
             stream.seek(-2, 1)
-            if x == b_('\n') or x == b_('\r'): ## \n = LF; \r = CR
+            if x == b_('\n') or x == b_('\r'): # \n = LF; \r = CR
                 crlf = False
                 while x == b_('\n') or x == b_('\r'):
                     if debug:
@@ -1225,7 +1226,7 @@ class PdfFileReader(object):
                         stream.seek(-1, 1)
                         crlf = True
                     stream.seek(-2, 1)
-                stream.seek(2 if crlf else 1, 1) #if using CR+LF, go back 2 bytes, else 1
+                stream.seek(2 if crlf else 1, 1) # if using CR+LF, go back 2 bytes, else 1
                 break
             else:
                 if debug:
@@ -1475,10 +1476,10 @@ class PageObject(DictionaryObject):
     # Returns the /Contents object, or None if it doesn't exist.
     # /Contents is optionnal, as described in PDF Reference  7.7.3.3
     def getContents(self):
-      if "/Contents" in self:
-        return self["/Contents"].getObject()
-      else:
-        return None
+        if "/Contents" in self:
+            return self["/Contents"].getObject()
+        else:
+            return None
 
     ##
     # Merges the content streams of two pages into one.  Resource references
@@ -1541,7 +1542,7 @@ class PageObject(DictionaryObject):
         originalContent = self.getContents()
         if originalContent is not None:
             newContentArray.append(PageObject._pushPopGS(
-                  originalContent, self.pdf))
+                originalContent, self.pdf))
 
         page2Content = page2.getContents()
         if page2Content is not None:
@@ -1595,7 +1596,7 @@ class PageObject(DictionaryObject):
     # @param page2 An instance of {@link #PageObject PageObject} to be merged.
     # @param factor The scaling factor
     def mergeScaledPage(self, page2, factor):
-        # CTM to scale : [ sx 0 0 sy 0 0 ]
+        # CTM to scale: [ sx 0 0 sy 0 0 ]
         return self.mergeTransformedPage(page2, [factor, 0,
                                                  0,      factor,
                                                  0,      0])
@@ -1766,9 +1767,9 @@ class PageObject(DictionaryObject):
     # @param height The new heigth
     def scaleTo(self, width, height):
         sx = width / (self.mediaBox.getUpperRight_x() -
-                      self.mediaBox.getLowerLeft_x ())
+                      self.mediaBox.getLowerLeft_x())
         sy = height / (self.mediaBox.getUpperRight_y() -
-                       self.mediaBox.getLowerLeft_x ())
+                       self.mediaBox.getLowerLeft_x())
         self.scale(sx, sy)
 
     ##
@@ -1981,7 +1982,6 @@ class ContentStream(DecodedStreamObject):
         self.__parseContentStream(StringIO(value))
 
     _data = property(_getData, _setData)
-
 
 
 ##
