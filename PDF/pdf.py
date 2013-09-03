@@ -30,7 +30,6 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-import string
 
 """
 A pure-Python PDF library with very minimal capabilities.  It was designed to
@@ -45,6 +44,9 @@ import math
 import struct
 import sys
 import warnings
+import time
+import random
+import string
 from sys import version_info
 from hashlib import md5
 try:
@@ -199,7 +201,6 @@ class PdfFileWriter(object):
     # encryption.  When false, 40bit encryption will be used.  By default, this
     # flag is on.
     def encrypt(self, user_pwd, owner_pwd = None, use_128bit = True):
-        import time, random
         if owner_pwd == None:
             owner_pwd = user_pwd
         if use_128bit:
@@ -241,7 +242,6 @@ class PdfFileWriter(object):
     # the write method, and the tell method, similar to a file object.
     def write(self, stream):
         debug = False
-        import struct
 
         externalReferenceMap = {}
 
@@ -899,7 +899,6 @@ class PdfFileReader(object):
                 if not hasattr(self, '_decryption_key'):
                     raise Exception, "file has not been decrypted"
                 # otherwise, decrypt here...
-                import struct
                 pack1 = struct.pack("<i", indirectReference.idnum)[:3]
                 pack2 = struct.pack("<i", indirectReference.generation)[:2]
                 key = self._decryption_key + pack1 + pack2
@@ -2052,7 +2051,6 @@ def _alg32(password, rev, keylen, owner_entry, p_entry, id1_entry, metadata_encr
     password = (password + _encryption_padding)[:32]
     # 2. Initialize the MD5 hash function and pass the result of step 1 as
     # input to this function.
-    import struct
     m = md5(password)
     # 3. Pass the value of the encryption dictionary's /O entry to the MD5 hash
     # function.
