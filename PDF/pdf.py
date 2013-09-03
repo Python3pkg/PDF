@@ -1053,7 +1053,7 @@ class PdfFileReader(object):
                         offset, generation = int(offset), int(generation)
                         if generation not in self.xref:
                             self.xref[generation] = {}
-                        if self.xref[generation].has_key(num):
+                        if num in self.xref[generation]:
                             # It really seems like we should allow the last
                             # xref table in the file to override previous
                             # ones. Since we read the file backwards, assume
