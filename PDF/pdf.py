@@ -850,7 +850,7 @@ class PdfFileReader(object):
                 streamData.seek(pos,0)
             try:
                 obj = readObject(streamData, self)
-            except utils.PdfStreamError, e:
+            except utils.PdfStreamError as e:
                 # Stream object cannot be read. Normally, a critical error, but
                 # Adobe Reader doesn't complain, so continue (in strict mode?)
                 e = sys.exc_info()[1]
@@ -901,7 +901,7 @@ class PdfFileReader(object):
             if not self._override_encryption and self.isEncrypted:
                 # if we don't have the encryption key:
                 if not hasattr(self, '_decryption_key'):
-                    raise Exception, "file has not been decrypted"
+                    raise Exception("file has not been decrypted")
                 # otherwise, decrypt here...
                 pack1 = struct.pack("<i", indirectReference.idnum)[:3]
                 pack2 = struct.pack("<i", indirectReference.generation)[:2]
@@ -1266,9 +1266,11 @@ class PdfFileReader(object):
     def _decrypt(self, password):
         encrypt = self.trailer['/Encrypt'].getObject()
         if encrypt['/Filter'] != '/Standard':
-            raise NotImplementedError, "only Standard PDF encryption handler is available"
+            raise NotImplementedError(
+                "only Standard PDF encryption handler is available")
         if encrypt['/V'] not in (1, 2):
-            raise NotImplementedError, "only algorithm code 1 and 2 are supported"
+            raise NotImplementedError(
+                "only algorithm code 1 and 2 are supported")
         user_password, key = self._authenticateUserPassword(password)
         if user_password:
             self._decryption_key = key
