@@ -692,7 +692,7 @@ class PdfFileReader(object):
                 if isinstance(val, DictionaryObject) and '/D' in val:
                     val = val['/D']
                 dest = self._buildDestination(key, val)
-                if dest != None:
+                if dest is not None:
                     retval[key] = dest
 
         return retval
@@ -872,7 +872,7 @@ class PdfFileReader(object):
             print("looking at:",indirectReference.idnum,indirectReference.generation)
         retval = self.cacheGetIndirectObject(indirectReference.generation,
             indirectReference.idnum)
-        if retval != None:
+        if retval is not None:
             return retval
         if indirectReference.generation == 0 and \
                 indirectReference.idnum in self.xref_objStm:
@@ -1332,7 +1332,7 @@ def getRectangle(self, name, defaults):
     if retval is None:
         for d in defaults:
             retval = self.get(d)
-            if retval != None:
+            if retval is not None:
                 break
     if isinstance(retval, IndirectObject):
         retval = self.pdf.getObject(retval)
