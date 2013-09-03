@@ -45,6 +45,7 @@ import math
 import struct
 import sys
 from sys import version_info
+from hashlib import md5
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -57,13 +58,6 @@ from generic import *
 from utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
 from utils import b_
 
-if version_info < ( 2, 4 ):
-   from sets import ImmutableSet as frozenset
-
-if version_info < ( 2, 5 ):
-    from md5 import md5
-else:
-    from hashlib import md5
 
 warnings.formatwarning = utils._formatwarning
 
