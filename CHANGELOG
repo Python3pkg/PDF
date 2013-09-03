@@ -1,5 +1,10 @@
-Version 1.0
-===========
+2.0
+===
+
+Officially drop support for Python 2.5 and earlier.
+
+1.0
+===
 
 Initial fork from PyPDF2 version 1.18
 
