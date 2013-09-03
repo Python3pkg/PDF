@@ -957,7 +957,8 @@ class PdfFileReader(object):
     def cacheGetIndirectObject(self, generation, idnum):
         debug = False
         out = self.resolvedObjects.get((generation, idnum))
-        if debug and out: print "cache hit: %d %d"%(idnum, generation)
+        if debug and out:
+            print("cache hit: %d %d"%(idnum, generation))
         elif debug:
             print("cache miss: %d %d"%(idnum, generation))
         return out
@@ -987,14 +988,14 @@ class PdfFileReader(object):
         if debug:
             print("  line:",line)
         if line[:5] != b_("%%EOF"):
-            raise utils.PdfReadError, "EOF marker not found"
+            raise utils.PdfReadError("EOF marker not found")
 
         # find startxref entry - the location of the xref table
         line = self.readNextEndLine(stream)
         startxref = int(line)
         line = self.readNextEndLine(stream)
         if line[:9] != b_("startxref"):
-            raise utils.PdfReadError, "startxref not found"
+            raise utils.PdfReadError("startxref not found")
 
         # read all cross reference tables and their trailers
         self.xref = {}
@@ -1008,7 +1009,7 @@ class PdfFileReader(object):
                 # standard cross-reference table
                 ref = stream.read(4)
                 if ref[:3] != b_("ref"):
-                    raise utils.PdfReadError, "xref table read error"
+                    raise utils.PdfReadError("xref table read error")
                 readNonWhitespace(stream)
                 stream.seek(-1, 1)
                 firsttime = True # check if the first time looking at the xref table
@@ -1219,8 +1220,8 @@ class PdfFileReader(object):
                 crlf = False
                 while x == b_('\n') or x == b_('\r'):
                     if debug:
-                        if ord(x) == 0x0D: print "  x is CR 0D"
-                        elif ord(x) == 0x0A: print "  x is LF 0A"
+                        if ord(x) == 0x0D: print("  x is CR 0D")
+                        elif ord(x) == 0x0A: print("  x is LF 0A")
                     x = stream.read(1)
                     if x == b_('\n') or x == b_('\r'): # account for CR+LF
                         stream.seek(-1, 1)
