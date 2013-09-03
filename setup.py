@@ -42,7 +42,6 @@ setup(
         maintainer="Jason R. Coombs",
         maintainer_email="jaraco@jaraco.com",
         url="https://github.com/jaraco/PDF",
-        download_url="https://github.com/jaraco/PDF/tarball/master",
         classifiers = [
             "Development Status :: 5 - Production/Stable",
             "Intended Audience :: Developers",
