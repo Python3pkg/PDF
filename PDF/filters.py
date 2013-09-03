@@ -179,7 +179,7 @@ class LZWDecode(object):
         def resetDict(self):
             self.dictlen=258
             self.bitspercode=9
-                
+
 
         def nextCode(self):
             fillbits=self.bitspercode
@@ -191,8 +191,8 @@ class LZWDecode(object):
                 bitsfromhere=8-self.bitpos
                 if bitsfromhere>fillbits:
                     bitsfromhere=fillbits
-                value |= (((nextbits >> (8-self.bitpos-bitsfromhere)) & 
-                           (0xff >> (8-bitsfromhere))) << 
+                value |= (((nextbits >> (8-self.bitpos-bitsfromhere)) &
+                           (0xff >> (8-bitsfromhere))) <<
                           (fillbits-bitsfromhere))
                 fillbits -= bitsfromhere
                 self.bitpos += bitsfromhere
@@ -230,13 +230,13 @@ class LZWDecode(object):
                         baos+=p
                         self.dict[self.dictlen] = p;
                         self.dictlen+=1
-                    if (self.dictlen >= (1 << self.bitspercode) - 1 and 
+                    if (self.dictlen >= (1 << self.bitspercode) - 1 and
                         self.bitspercode < 12):
                         self.bitspercode+=1
             return baos
 
 
-    
+
     @staticmethod
     def decode(data,decodeParams=None):
         return LZWDecode.decoder(data).decode()

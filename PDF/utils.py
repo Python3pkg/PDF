@@ -46,7 +46,7 @@ __author_email__ = "biziqe@mathieu.fenniak.net"
 #            return func
 #        proxy = staticmethod(proxy)
 
-#custom implementation of warnings.formatwarning 
+#custom implementation of warnings.formatwarning
 def _formatwarning(message, category, filename, lineno, line=None):
     file = filename.replace("/","\\").rsplit("\\",1)[1] # find the file name
     return "%s: %s [%s:%s]\n" % (category.__name__, message, file, lineno)
@@ -132,7 +132,7 @@ class PdfReadError(PyPdfError):
 
 class PageSizeNotDefinedError(PyPdfError):
     pass
-    
+
 class PdfReadWarning(UserWarning):
     pass
 
