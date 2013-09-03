@@ -44,6 +44,7 @@ __author_email__ = "biziqe@mathieu.fenniak.net"
 import math
 import struct
 import sys
+import warnings
 from sys import version_info
 from hashlib import md5
 try:
@@ -51,12 +52,11 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-import filters
-import utils
-import warnings
-from generic import *
-from utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
-from utils import b_
+from . import filters
+from . import utils
+from .generic import *
+from .utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
+from .utils import b_
 
 
 warnings.formatwarning = utils._formatwarning

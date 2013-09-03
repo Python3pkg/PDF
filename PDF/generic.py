@@ -35,11 +35,11 @@ __author__ = "Mathieu Fenniak"
 __author_email__ = "biziqe@mathieu.fenniak.net"
 
 import re
-from utils import readNonWhitespace, RC4_encrypt
-from utils import b_, u_, chr_, ord_
-from utils import PdfStreamError
-import filters
-import utils
+from .utils import readNonWhitespace, RC4_encrypt
+from .utils import b_, u_, chr_, ord_
+from .utils import PdfStreamError
+from . import filters
+from . import utils
 import decimal
 import codecs
 #import debugging
