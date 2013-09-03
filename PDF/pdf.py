@@ -321,7 +321,6 @@ class PdfFileWriter(object):
             print(data, "TYPE", data.__class__.__name__)
         if isinstance(data, DictionaryObject):
             for key, value in data.items():
-                origvalue = value
                 value = self._sweepIndirectReferences(externMap, value)
                 if isinstance(value, StreamObject):
                     # a dictionary value is a stream.  streams must be indirect
@@ -945,7 +944,7 @@ class PdfFileReader(object):
         extra |= utils.skipOverWhitespace(stream)
         stream.seek(-1, 1)
         generation = readUntilWhitespace(stream)
-        obj = stream.read(3)
+        stream.read(3)
         readNonWhitespace(stream)
         stream.seek(-1, 1)
         if (extra and self.strict):
@@ -1130,8 +1129,8 @@ class PdfFileReader(object):
                         # The rest of the elements depend on the xref_type
                         if xref_type == 0:
                             # linked list of free objects
-                            next_free_object = getEntry(1)
-                            next_generation = getEntry(2)
+                            getEntry(1) # next_free_object
+                            getEntry(2) # next_generation
                         elif xref_type == 1:
                             # objects that are in use but are not compressed
                             byte_offset = getEntry(1)
@@ -1958,7 +1957,7 @@ class ContentStream(DecodedStreamObject):
                     data += tok
             else:
                 data += tok
-        x = readNonWhitespace(stream)
+        readNonWhitespace(stream)
         stream.seek(-1, 1)
         return {"settings": settings, "data": data}
 
