@@ -384,7 +384,7 @@ class PdfFileWriter(object):
             assert outlineRef.getObject() == outline
         else:
             outline = TreeObject()
-            outline.update({ })
+            outline.update({})
             outlineRef = self._addObject(outline)
             root[NameObject('/Outlines')] = outlineRef
 
@@ -432,7 +432,7 @@ class PdfFileWriter(object):
 
         outlineRef = self.getOutlineRoot()
 
-        if parent == None:
+        if parent is None:
             parent = outlineRef
 
         parent = parent.getObject()
@@ -458,7 +458,7 @@ class PdfFileWriter(object):
 
         outlineRef = self.getOutlineRoot()
 
-        if parent == None:
+        if parent is None:
             parent = outlineRef
 
         parent = parent.getObject()
@@ -483,7 +483,7 @@ class PdfFileWriter(object):
 
         outlineRef = self.getOutlineRoot()
 
-        if parent == None:
+        if parent is None:
             parent = outlineRef
 
 
@@ -628,7 +628,7 @@ class PdfFileReader(object):
             finally:
                 self._override_encryption = False
         else:
-            if self.flattenedPages == None:
+            if self.flattenedPages is None:
                 self._flatten()
             return len(self.flattenedPages)
 
@@ -647,7 +647,7 @@ class PdfFileReader(object):
     def getPage(self, pageNumber):
         ## ensure that we're not trying to access an encrypted PDF
         #assert "/Encrypt" not in self.trailer
-        if self.flattenedPages == None:
+        if self.flattenedPages is None:
             self._flatten()
         return self.flattenedPages[pageNumber]
 
@@ -667,7 +667,7 @@ class PdfFileReader(object):
     # @return Returns a dict which maps names to {@link #Destination
     # destinations}.
     def getNamedDestinations(self, tree=None, retval=None):
-        if retval == None:
+        if retval is None:
             retval = {}
             catalog = self.trailer["/Root"]
 
@@ -679,7 +679,7 @@ class PdfFileReader(object):
                 if "/Dests" in names:
                     tree = names['/Dests']
 
-        if tree == None:
+        if tree is None:
             return retval
 
         if "/Kids" in tree:
@@ -713,7 +713,7 @@ class PdfFileReader(object):
     # Stability: Added in v1.10, will exist for all future v1.x releases.
     # @return Returns a nested list of {@link #Destination destinations}.
     def getOutlines(self, node=None, outlines=None):
-        if outlines == None:
+        if outlines is None:
             outlines = []
             catalog = self.trailer["/Root"]
 
@@ -724,7 +724,7 @@ class PdfFileReader(object):
                     node = lines["/First"]
             self._namedDests = self.getNamedDestinations()
 
-        if node == None:
+        if node is None:
           return outlines
 
         # see if there are any more outlines
@@ -790,9 +790,9 @@ class PdfFileReader(object):
             NameObject("/Resources"), NameObject("/MediaBox"),
             NameObject("/CropBox"), NameObject("/Rotate")
             )
-        if inherit == None:
+        if inherit is None:
             inherit = dict()
-        if pages == None:
+        if pages is None:
             self.flattenedPages = []
             catalog = self.trailer["/Root"].getObject()
             pages = catalog["/Pages"].getObject()
@@ -1328,7 +1328,7 @@ def getRectangle(self, name, defaults):
     retval = self.get(name)
     if isinstance(retval, RectangleObject):
         return retval
-    if retval == None:
+    if retval is None:
         for d in defaults:
             retval = self.get(d)
             if retval != None:
