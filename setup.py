@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import re
-
 import setuptools
 
 long_description = """
@@ -20,18 +18,9 @@ objects rather than file streams, allowing for PDF manipulation in memory.
 It is therefore a useful tool for websites that manage or manipulate PDFs.
 """
 
-VERSIONFILE="PDF/_version.py"
-verstrline = open(VERSIONFILE, "rt").read()
-VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
-mo = re.search(VSRE, verstrline, re.M)
-if mo:
-   verstr = mo.group(1)
-else:
-   raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE))
-
 setup_params = dict(
     name="PDF",
-    version=verstr,
+    use_hg_version=True,
     description="PDF toolkit",
     long_description=long_description,
     author="Mathieu Fenniak",
@@ -49,6 +38,7 @@ setup_params = dict(
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
     packages=["PDF"],
+    setup_requires=['hgtools<4dev'],
     use_2to3=True,
 )
 

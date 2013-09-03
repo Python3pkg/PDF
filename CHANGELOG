@@ -1,11 +1,19 @@
+Version 1.0
+===========
+
+Initial fork from PyPDF2 version 1.18
+
+PyPDF2 Changes
+==============
+
 Version 1.18, 2013-08-19
 ---------------------------
 
-- Fixed a bug where older verions of objects were incorrectly added to the 
+- Fixed a bug where older verions of objects were incorrectly added to the
   cache, resulting in outdated or missing pages, images, and other objects
   (from speedplane)
 
-- Fixed a bug in parsing the xref table where new xref values were 
+- Fixed a bug in parsing the xref table where new xref values were
   overwritten; also cleaned up code (from speedplane)
 
 - New method mergeRotatedAroundPointPage which merges a page while rotating
@@ -28,8 +36,8 @@ Other Changes:
 Version 1.17, 2013-07-25
 ------------------------
 
- - Removed one (from pdf.py) of the two Destination classes. Both 
-   classes had the same name, but were slightly different in content, 
+ - Removed one (from pdf.py) of the two Destination classes. Both
+   classes had the same name, but were slightly different in content,
    causing some errors. (from Janne Vanhala)
 
  - Corrected and Expanded README file to demonstrate PdfFileMerger
@@ -46,9 +54,9 @@ Versions -1.16, -2013-06-30
  - Note: This ChangeLog has not been kept up-to-date for a while.
    Hopefully we can keep better track of it from now on. Some of the
    changes listed here come from previous versions 1.14 and 1.15; they
-   were only vaguely defined. With the new _version.py file we should 
+   were only vaguely defined. With the new _version.py file we should
    have more structured and better documented versioning from now on.
- 
+
  - Defined PyPDF2.__version__
 
  - Fixed encrypt() method (from Martijn The)
@@ -61,14 +69,14 @@ Versions -1.16, -2013-06-30
 
  - Fixed an bug caused by DecimalError Exception (from Adam Morris)
 
- - Many other bug fixes and features by: 
-	
+ - Many other bug fixes and features by:
+
 	jeansch
 	Anton Vlasenko
 	Joseph Walton
 	Jan Oliver Oelerich
 	Fabian Henze
-	And any others I missed. 
+	And any others I missed.
 	Thanks for contributing!
 
 
@@ -208,7 +216,7 @@ Version 1.6, 2006-06-06
    stream filters more easily, including compressed streams.
 
  - Add a graphics state push/pop around page merges.  Improves quality of
-   page merges when one page's content stream leaves the graphics 
+   page merges when one page's content stream leaves the graphics
    in an abnormal state.
 
  - Add PageObject.compressContentStreams function, which filters all content
