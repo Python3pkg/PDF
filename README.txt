@@ -1,10 +1,30 @@
-Example 1:
+PDF
+===
+
+A Pure-Python library built as a PDF toolkit.  It is capable of:
+
+- extracting document information (title, author, ...),
+- splitting documents page by page,
+- merging documents page by page,
+- cropping pages,
+- merging multiple pages into a single page,
+- encrypting and decrypting PDF files.
+
+By being Pure-Python, it should run on any Python platform without any
+dependencies on external libraries.  It can also work entirely on StringIO
+objects rather than file streams, allowing for PDF manipulation in memory.
+It is therefore a useful tool for websites that manage or manipulate PDFs.
+
+Examples
+========
+
+Example 1::
 
     from PyPDF2 import PdfFileWriter, PdfFileReader
 
     output = PdfFileWriter()
     input1 = PdfFileReader(open("document1.pdf", "rb"))
-    
+
     # print how many pages input1 has:
     print "document1.pdf has %d pages." % input1.getNumPages()
 
@@ -23,7 +43,7 @@ Example 1:
     watermark = PdfFileReader(open("watermark.pdf", "rb"))
     page4.mergePage(watermark.getPage(0))
     output.addPage(page4)
-    
+
 
     # add page 5 from input1, but crop it to half size:
     page5 = input1.getPage(4)
@@ -42,12 +62,12 @@ Example 1:
     output.write(outputStream)
 
 
-Example 2:
+Example 2::
 
     from PyPDF2 import PdfFileReader, PdfFileMerger
 
     merger = PdfFileMerger()
-     
+
     input1 = open("document1.pdf", "rb")
     input2 = open("document2.pdf", "rb")
     input3 = open("document3.pdf", "rb")
@@ -64,4 +84,3 @@ Example 2:
     # Write to an output PDF document
     output = open("document-output.pdf", "wb")
     merger.write(output)
-
