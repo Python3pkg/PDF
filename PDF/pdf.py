@@ -15,9 +15,12 @@ import io
 from hashlib import md5
 
 from . import utils
-from .generic import *
 from .utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
 from .utils import b_
+from .generic import (DictionaryObject, NameObject, NumberObject, ArrayObject,
+    createStringObject, IndirectObject, ByteStringObject, StreamObject,
+    TreeObject, Destination, NullObject, readObject, TextStringObject,
+    RectangleObject, FloatObject, DecodedStreamObject, BooleanObject)
 
 warnings.formatwarning = utils._formatwarning
 
