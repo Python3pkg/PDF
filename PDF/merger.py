@@ -420,7 +420,7 @@ class OutlinesObject(list):
         self.tree.removeChild(obj)
 
     def add(self, title, page):
-        pageRef = self.pdf.getObject(self.pdf._pages)['/Kids'][pagenum]
+        pageRef = self.pdf.getObject(self.pdf._pages)['/Kids'][page]
         action = DictionaryObject()
         action.update({
             NameObject('/D'): ArrayObject([pageRef, NameObject('/FitH'), NumberObject(826)]),
@@ -434,7 +434,7 @@ class OutlinesObject(list):
             NameObject('/Title'): createStringObject(title),
         })
 
-        pdf._addObject(bookmark)
+        self.pdf._addObject(bookmark)
 
         self.tree.addChild(bookmark)
 
