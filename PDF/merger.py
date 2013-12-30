@@ -28,8 +28,6 @@ class PdfFileMerger(object):
 
     def __init__(self, strict=True):
         """
-        >>> PdfFileMerger()
-
         Initializes a PdfFileMerger, no parameters required
         """
         self.inputs = []
@@ -42,8 +40,6 @@ class PdfFileMerger(object):
 
     def merge(self, position, fileobj, bookmark=None, pages=None, import_bookmarks=True):
         """
-        >>> merge(position, file, bookmark=None, pages=None, import_bookmarks=True)
-
         Merges the pages from the source document specified by "file" into the output
         file at the page number specified by "position".
 
@@ -133,8 +129,6 @@ class PdfFileMerger(object):
 
     def append(self, fileobj, bookmark=None, pages=None, import_bookmarks=True):
         """
-        >>> append(file, bookmark=None, pages=None, import_bookmarks=True):
-
         Identical to the "merge" function, but assumes you want to concatenate all pages
         onto the end of the file instead of specifying a position.
         """
@@ -143,8 +137,6 @@ class PdfFileMerger(object):
 
     def write(self, fileobj):
         """
-        >>> write(file)
-
         Writes all data that has been merged to "file" (which can be a filename or any
         kind of file-like object)
         """
@@ -173,8 +165,6 @@ class PdfFileMerger(object):
 
     def close(self):
         """
-        >>> close()
-
         Shuts all file descriptors (input and output) and clears all memory usage
         """
         self.pages = []
