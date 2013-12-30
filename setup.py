@@ -29,6 +29,7 @@ setup_params = dict(
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
     packages=["PDF"],
+    install_requires=["six"],
     setup_requires=['hgtools'],
     use_2to3=True,
 )
