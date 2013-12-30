@@ -363,18 +363,18 @@ class PdfFileMerger(object):
                 raise ValueError, "Unresolved bookmark '%s'" % (b['/Title'],)
 
     def findBookmark(self, bookmark, root=None):
-    	if root == None:
-    		root = self.bookmarks
+        if root == None:
+            root = self.bookmarks
 
-    	for i, b in enumerate(root):
-    		if type(b) == list:
-    			res = self.findBookmark(bookmark, b)
-    			if res:
-    				return [i] + res
-    		if b == bookmark or b['/Title'] == bookmark:
-    			return [i]
+        for i, b in enumerate(root):
+            if type(b) == list:
+                res = self.findBookmark(bookmark, b)
+                if res:
+                    return [i] + res
+            if b == bookmark or b['/Title'] == bookmark:
+                return [i]
 
-    	return None
+        return None
 
     def addBookmark(self, title, pagenum, parent=None):
         """
@@ -384,25 +384,25 @@ class PdfFileMerger(object):
         """
 
         if parent == None:
-        	iloc = [len(self.bookmarks)-1]
+            iloc = [len(self.bookmarks)-1]
         elif type(parent) == list:
-        	iloc = parent
+            iloc = parent
         else:
-        	iloc = self.findBookmark(parent)
+            iloc = self.findBookmark(parent)
 
         dest = Bookmark(TextStringObject(title), NumberObject(pagenum), NameObject('/FitH'), NumberObject(826))
 
         if parent == None:
-        	self.bookmarks.append(dest)
+            self.bookmarks.append(dest)
         else:
-        	bmparent = self.bookmarks
-        	for i in iloc[:-1]:
-        		bmparent = bmparent[i]
-        	npos = iloc[-1]+1
-        	if npos < len(bmparent) and type(bmparent[npos]) == list:
-        		bmparent[npos].append(dest)
-        	else:
-        		bmparent.insert(npos, [dest])
+            bmparent = self.bookmarks
+            for i in iloc[:-1]:
+                bmparent = bmparent[i]
+            npos = iloc[-1]+1
+            if npos < len(bmparent) and type(bmparent[npos]) == list:
+                bmparent[npos].append(dest)
+            else:
+                bmparent.insert(npos, [dest])
 
 
     def addNamedDestination(self, title, pagenum):
