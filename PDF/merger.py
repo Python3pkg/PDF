@@ -8,6 +8,7 @@ from .generic import (DictionaryObject, NameObject, NumberObject, ArrayObject,
     createStringObject, TreeObject, Destination, NullObject, TextStringObject,
     FloatObject, Bookmark)
 from .pdf import PdfFileReader, PdfFileWriter
+from . import util
 
 class _MergedPage(object):
     """
@@ -66,9 +67,9 @@ class PdfFileMerger(object):
         # StringIO stream.
         # If fileobj is none of the above types, it is not modified
         if type(fileobj) in six.string_types:
-            fileobj = file(fileobj, 'rb')
+            fileobj = open(fileobj, 'rb')
             my_file = True
-        elif type(fileobj) == file:
+        elif util.is_file(fileobj):
             fileobj.seek(0)
             filecontent = fileobj.read()
             fileobj = io.BytesIO(filecontent)
@@ -144,7 +145,7 @@ class PdfFileMerger(object):
         """
         my_file = False
         if type(fileobj) in (str, unicode):
-            fileobj = file(fileobj, 'wb')
+            fileobj = open(fileobj, 'wb')
             my_file = True
 
         # Add pages to the PdfFileWriter

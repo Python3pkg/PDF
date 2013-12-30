@@ -2,6 +2,8 @@
 Utility functions for PDF library.
 """
 
+import io
+
 #custom implementation of warnings.formatwarning
 def _formatwarning(message, category, filename, lineno, line=None):
     file = filename.replace("/","\\").rsplit("\\",1)[1] # find the file name
@@ -124,6 +126,9 @@ if sys.version_info[0] < 3:
     string_type = unicode
     bytes_type = str
 
+    def is_file(ob):
+        return isinstance(ob, file)
+
 else:
     def b_(s):
         return s.encode('latin-1')
@@ -150,6 +155,9 @@ else:
 
     string_type = str
     bytes_type = bytes
+
+    def is_file(ob):
+        return isinstance(ob, io.IOBase)
 
 if __name__ == "__main__":
     # test RC4
