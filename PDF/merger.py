@@ -1,6 +1,7 @@
+import io
+
 from .generic import *
 from .pdf import PdfFileReader, PdfFileWriter
-from StringIO import StringIO
 
 class _MergedPage(object):
     """
@@ -68,12 +69,12 @@ class PdfFileMerger(object):
         elif type(fileobj) == file:
             fileobj.seek(0)
             filecontent = fileobj.read()
-            fileobj = StringIO(filecontent)
+            fileobj = io.BytesIO(filecontent)
             my_file = True
         elif type(fileobj) == PdfFileReader:
             orig_tell = fileobj.stream.tell()
             fileobj.stream.seek(0)
-            filecontent = StringIO(fileobj.stream.read())
+            filecontent = io.BytesIO(fileobj.stream.read())
             fileobj.stream.seek(orig_tell) # reset the stream to its original location
             fileobj = filecontent
             my_file = True

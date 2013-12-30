@@ -2,11 +2,9 @@
 Implementation of stream filters for PDF.
 """
 
+import io
+
 from .utils import PdfReadError
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 try:
     import zlib
@@ -75,7 +73,7 @@ class FlateDecode(object):
             columns = decodeParms["/Columns"]
             # PNG prediction:
             if predictor >= 10 and predictor <= 15:
-                output = StringIO()
+                output = io.BytesIO()
                 # PNG prediction can vary from row to row
                 rowlength = columns + 1
                 assert len(data) % rowlength == 0

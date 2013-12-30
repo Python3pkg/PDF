@@ -11,11 +11,8 @@ import sys
 import warnings
 import time
 import random
+import io
 from hashlib import md5
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 from . import utils
 from .generic import *
@@ -514,7 +511,7 @@ class PdfFileReader(object):
             warnings.warn("PdfFileReader stream/file object is not in binary mode. It may not be read correctly.", utils.PdfReadWarning)
         if type(stream) in (str, unicode):
             fileobj = open(stream,'rb')
-            stream = StringIO(fileobj.read())
+            stream = io.BytesIO(fileobj.read())
             fileobj.close()
         self.read(stream)
         self.stream = stream
@@ -785,7 +782,7 @@ class PdfFileReader(object):
         assert objStm['/Type'] == '/ObjStm'
         # /N is the number of indirect objects in the stream
         assert idx < objStm['/N']
-        streamData = StringIO(objStm.getData())
+        streamData = io.BytesIO(objStm.getData())
         for i in range(objStm['/N']):
             objnum = NumberObject.readFromStream(streamData)
             readNonWhitespace(streamData)
@@ -1047,7 +1044,7 @@ class PdfFileReader(object):
                 xrefstream = readObject(stream, self)
                 assert xrefstream["/Type"] == "/XRef"
                 self.cacheIndirectObject(generation, idnum, xrefstream)
-                streamData = StringIO(xrefstream.getData())
+                streamData = io.BytesIO(xrefstream.getData())
                 # Index pairs specify the subsections in the dictionary. If
                 # none create one subsection that spans everything.
                 idx_pairs = xrefstream.get("/Index", [0, xrefstream.get("/Size")])
@@ -1839,12 +1836,12 @@ class ContentStream(DecodedStreamObject):
         # multiple StreamObjects to be cat'd together.
         stream = stream.getObject()
         if isinstance(stream, ArrayObject):
-            data = ""
+            data = b""
             for s in stream:
                 data += s.getObject().getData()
-            stream = StringIO(data)
+            stream = io.BytesIO(data)
         else:
-            stream = StringIO(stream.getData())
+            stream = io.BytesIO(stream.getData())
         self.__parseContentStream(stream)
 
     def __parseContentStream(self, stream):
@@ -1921,11 +1918,11 @@ class ContentStream(DecodedStreamObject):
         return {"settings": settings, "data": data}
 
     def _getData(self):
-        newdata = StringIO()
+        newdata = io.BytesIO()
         for operands,operator in self.operations:
             if operator == "INLINE IMAGE":
                 newdata.write("BI")
-                dicttext = StringIO()
+                dicttext = io.BytesIO()
                 operands["settings"].writeToStream(dicttext, None)
                 newdata.write(dicttext.getvalue()[2:-2])
                 newdata.write("ID ")
@@ -1940,7 +1937,7 @@ class ContentStream(DecodedStreamObject):
         return newdata.getvalue()
 
     def _setData(self, value):
-        self.__parseContentStream(StringIO(value))
+        self.__parseContentStream(io.BytesIO(value))
 
     _data = property(_getData, _setData)
 
