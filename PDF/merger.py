@@ -1,6 +1,8 @@
 import io
 
-from .generic import *
+from .generic import (DictionaryObject, NameObject, NumberObject, ArrayObject,
+    createStringObject, TreeObject, Destination, NullObject, TextStringObject,
+    FloatObject, Bookmark)
 from .pdf import PdfFileReader, PdfFileWriter
 
 class _MergedPage(object):
