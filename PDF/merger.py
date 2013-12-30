@@ -89,7 +89,7 @@ class PdfFileMerger(object):
         # Find the range of pages to merge
         if pages is not None:
             pages = (0, pdfr.getNumPages())
-        elif type(pages) in (int, float, str, unicode):
+        elif type(pages) in (int, float) + six.string_types:
             raise TypeError('"pages" must be a tuple of (start, end)')
 
         srcpages = []
@@ -144,7 +144,7 @@ class PdfFileMerger(object):
         kind of file-like object)
         """
         my_file = False
-        if type(fileobj) in (str, unicode):
+        if type(fileobj) in six.string_types:
             fileobj = open(fileobj, 'wb')
             my_file = True
 
