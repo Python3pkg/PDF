@@ -9,6 +9,7 @@ import math
 import struct
 import sys
 import warnings
+import codecs
 import time
 import random
 import io
@@ -49,7 +50,7 @@ class PdfFileWriter(object):
         # info object
         info = DictionaryObject()
         info.update({
-                NameObject("/Producer"): createStringObject(u"Python PDF Library - http://pybrary.net/pyPdf/")
+                NameObject("/Producer"): createStringObject(codecs.BOM_UTF16_BE + u"PyPDF2".encode('utf-16be'))
                 })
         self._info = self._addObject(info)
 
@@ -204,6 +205,8 @@ class PdfFileWriter(object):
     # @param stream An object to write the file to.  The object must support
     # the write method, and the tell method, similar to a file object.
     def write(self, stream):
+        if hasattr(stream, 'mode') and 'b' not in stream.mode:
+            warnings.warn("File <%s> to write to is not in binary mode. It may not be written to correctly." % stream.name)
         debug = False
 
         externalReferenceMap = {}
@@ -276,6 +279,17 @@ class PdfFileWriter(object):
         # eof
         stream.write(b_("\nstartxref\n%s\n%%%%EOF\n" % (xref_location)))
 
+    def addMetadata(self, infos):
+        """
+        'infos' argument is a python dictionary where each key is a field
+        and each value is your new metadata.
+        Example: {u'/Title': u'My title'}
+        """
+        args = {}
+        for key, value in infos.items():
+            args[NameObject(key)] = createStringObject(value)
+        self.getObject(self._info).update(args)
+
     def _sweepIndirectReferences(self, externMap, data):
         debug = False
         if debug:
@@ -307,7 +321,6 @@ class PdfFileWriter(object):
                     self.stack.append(data.idnum)
                     realdata = self.getObject(data)
                     self._sweepIndirectReferences(externMap, realdata)
-                    self.stack.pop()
                     return data
             else:
                 newobj = externMap.get(data.pdf, {}).get(data.generation, {}).get(data.idnum, None)
@@ -482,6 +495,110 @@ class PdfFileWriter(object):
 
         return destRef
 
+    def ignoreLinks(self):
+        pages = self.getObject(self._pages)['/Kids']
+        for page in pages:
+            pageRef = self.getObject(page)
+            if pageRef.has_key("/Annots"):
+                del pageRef['/Annots']
+
+    def addLink(self, pagenum, pagedest, rect, zoom='/FitV'):
+        """
+        Add a internal link in pdf, from a rectangular area and pointing at
+        the specified page number.
+        """
+        pageLink = self.getObject(self._pages)['/Kids'][pagenum]
+        pageDest = self.getObject(self._pages)['/Kids'][pagedest] #TODO: switch for external link
+        pageRef = self.getObject(pageLink)
+
+        lnk = DictionaryObject()
+        lnk.update({
+            NameObject('/Rect') : NameObject(rect), # link pposition
+            NameObject('/Dest') : ArrayObject([pageDest, NameObject(zoom), NumberObject(826)]), 
+            NameObject('/P') : NameObject(pageLink), # 1pt border
+            NameObject('/Border') : NameObject('[ 0 0 0 ]'), # [0 0 1] 1pt border
+            NameObject('/Type') : NameObject('/Annot'),
+            NameObject('/Subtype') : NameObject('/Link'),
+        })
+        lnkRef = self._addObject(lnk)
+
+        if pageRef.has_key("/Annots"):
+            pageRef['/Annots'].append(lnkRef)
+        else:
+            pageRef[NameObject('/Annots')] = ArrayObject([lnkRef])
+    
+    _valid_layouts = set(['/NoLayout', '/SinglePage', '/OneColumn', '/TwoColumnLeft', '/TwoColumnRight', '/TwoPageLeft', '/TwoPageRight'])
+    
+    def getPageLayout(self):
+        '''
+        Get the page layout
+        
+        See PdfFileWriter.setPageLayout for a description of valid layouts.
+                
+        Returns None if the layout has not been set.
+        '''
+        try:
+            return self.getObject(self._root)['/PageLayout']
+        except KeyError:
+            return None
+        
+    def setPageLayout(self, layout):
+        '''
+        Set the page layout
+        
+        Valid layouts are:
+             /NoLayout        Layout explicitly not specified
+             /SinglePage      Show one page at a time
+             /OneColumn       Show one column at a time
+             /TwoColumnLeft   Show pages in two columns, odd-numbered pages on the left
+             /TwoColumnRight  Show pages in two columns, odd-numbered pages on the right
+             /TwoPageLeft     Show two pages at a time, odd-numbered pages on the left
+             /TwoPageRight    Show two pages at a time, odd-numbered pages on the right
+        '''
+        if not isinstance(layout, NameObject):
+            if layout not in self._valid_layouts:
+                warnings.warn("Layout should be one of: {}".format(', '.join(self._valid_layouts)))
+            layout = NameObject(layout)
+        root = self.getObject(self._root)
+        root.update({NameObject('/PageLayout'): layout})
+    
+    pageLayout = property(getPageLayout, setPageLayout)
+
+    _valid_modes = set(['/UseNone', '/UseOutlines', '/UseThumbs', '/UseFullscreen', '/UseOC', '/UseAttach'])
+
+    def getPageMode(self):
+        '''
+        Get the page mode
+        
+        See PdfFileWriter.setPageMode for a description of valid modes.
+        
+        Returns None if the mode has not been set.
+        '''
+        try:
+            return self.getObject(self._root)['/PageMode']
+        except KeyError:
+            return None
+
+    def setPageMode(self, mode):
+        '''
+        Set the page mode
+        
+        Valid modes are:
+            /UseNone        Do not show outlines or thumbnails panels
+            /UseOutlines    Show outlines (aka bookmarks) panel
+            /UseThumbs      Show page thumbnails panel
+            /UseFullscreen  Fullscreen view
+            /UseOC          Show Optional Content Group (OCG) panel
+            /UseAttach      Show attachments panel
+        '''
+        if not isinstance(mode, NameObject):
+            if mode not in self._valid_modes:
+                warnings.warn("Mode should be one of: {}".format(', '.join(self._valid_modes)))
+            mode = NameObject(mode)
+        root = self.getObject(self._root)
+        root.update({NameObject('/PageMode'): mode})
+    
+    pageMode = property(getPageMode, setPageMode)
 
 ##
 # Initializes a PdfFileReader object.  This operation can take some time, as
@@ -493,7 +610,7 @@ class PdfFileWriter(object):
 #               similar to a file object.
 # @param strict Determines whether user should be warned of all problems and
 #               also causes some correctable problems to be fatal. Defaults
-#               to False.
+#               to True.
 # @param warndest Allows redirection of warnings to any open file/stream. Defauls to
 #                 the warnings default (sys.stderr)
 class PdfFileReader(object):
@@ -742,6 +859,36 @@ class PdfFileReader(object):
     pages = property(lambda self: ConvertFunctionsToVirtualList(self.getNumPages, self.getPage),
             None, None)
 
+    def getPageLayout(self):
+        '''
+        Get the page layout
+
+        See PdfFileWriter.setPageLayout for a description of valid layouts.     
+
+        Returns None if the layout has not been set.
+        '''
+        try:
+            return self.trailer['/Root']['/PageLayout']
+        except KeyError:
+            return None
+    
+    pageLayout = property(getPageLayout)
+
+    def getPageMode(self):
+        '''
+        Get the page mode
+        
+        See PdfFileWriter.setPageMode for a description of valid modes.
+        
+        Returns None if the mode has not been set.
+        '''
+        try:
+            return self.trailer['/Root']['/PageMode']
+        except KeyError:
+            return None
+    
+    pageMode = property(getPageMode)
+
     def _flatten(self, pages=None, inherit=None, indirectRef=None):
         inheritablePageAttributes = (
             NameObject("/Resources"), NameObject("/MediaBox"),
@@ -940,14 +1087,15 @@ class PdfFileReader(object):
         stream.seek(-1, 2)
         if not stream.tell():
             raise utils.PdfReadError('Cannot read an empty file')
+        last1K = stream.tell() - 1024 + 1 # offset of last 1024 bytes of stream
         line = b_('')
         if debug:
             print("  line:",line)
-        while not line:
+        while line[:5] != "%%EOF":
             line = self.readNextEndLine(stream)
         if debug:
             print("  line:",line)
-        if line[:5] != b_("%%EOF"):
+        if stream.tell() < last1K:
             raise utils.PdfReadError("EOF marker not found")
 
         # find startxref entry - the location of the xref table
@@ -1407,10 +1555,9 @@ class PageObject(DictionaryObject):
             return stream
         stream = ContentStream(stream, pdf)
         for operands,operator in stream.operations:
-            for i in range(len(operands)):
-                op = operands[i]
+            for op in operands:
                 if isinstance(op, NameObject):
-                    operands[i] = rename.get(op, op)
+                    op = rename.get(op, op)
         return stream
     _contentStreamRename = staticmethod(_contentStreamRename)
 
@@ -1437,7 +1584,7 @@ class PageObject(DictionaryObject):
 
     ##
     # Returns the /Contents object, or None if it doesn't exist.
-    # /Contents is optionnal, as described in PDF Reference  7.7.3.3
+    # /Contents is optional, as described in PDF Reference  7.7.3.3
     def getContents(self):
         if "/Contents" in self:
             return self["/Contents"].getObject()
@@ -1548,9 +1695,11 @@ class PageObject(DictionaryObject):
     # @param page2 An instance of {@link #PageObject PageObject} to be merged.
     # @param ctm   A 6 elements tuple containing the operands of the
     #              transformation matrix
-    def mergeTransformedPage(self, page2, ctm):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeTransformedPage(self, page2, ctm, expand=False):
         self._mergePage(page2, lambda page2Content:
-            PageObject._addTransformationMatrix(page2Content, page2.pdf, ctm), ctm)
+            PageObject._addTransformationMatrix(page2Content, page2.pdf, ctm), ctm, expand)
 
     ##
     # This is similar to mergePage, but the stream to be merged is scaled
@@ -1558,11 +1707,13 @@ class PageObject(DictionaryObject):
     #
     # @param page2 An instance of {@link #PageObject PageObject} to be merged.
     # @param factor The scaling factor
-    def mergeScaledPage(self, page2, factor):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeScaledPage(self, page2, factor, expand=False):
         # CTM to scale: [ sx 0 0 sy 0 0 ]
         return self.mergeTransformedPage(page2, [factor, 0,
                                                  0,      factor,
-                                                 0,      0])
+                                                 0,      0], expand)
 
     ##
     # This is similar to mergePage, but the stream to be merged is rotated
@@ -1570,12 +1721,14 @@ class PageObject(DictionaryObject):
     #
     # @param page2 An instance of {@link #PageObject PageObject} to be merged.
     # @param rotation The angle of the rotation, in degrees
-    def mergeRotatedPage(self, page2, rotation):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeRotatedPage(self, page2, rotation, expand=False):
         rotation = math.radians(rotation)
         return self.mergeTransformedPage(page2,
             [math.cos(rotation),  math.sin(rotation),
              -math.sin(rotation), math.cos(rotation),
-             0,                   0])
+             0,                   0], expand)
 
     ##
     # This is similar to mergePage, but the stream to be merged is translated
@@ -1584,10 +1737,12 @@ class PageObject(DictionaryObject):
     # @param page2 An instance of {@link #PageObject PageObject} to be merged.
     # @param tx    The translation on X axis
     # @param tx    The translation on Y axis
-    def mergeTranslatedPage(self, page2, tx, ty):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeTranslatedPage(self, page2, tx, ty, expand=False):
         return self.mergeTransformedPage(page2, [1,  0,
                                                  0,  1,
-                                                 tx, ty])
+                                                 tx, ty], expand)
 
     ##
     # This is similar to mergePage, but the stream to be merged is translated
@@ -1597,7 +1752,9 @@ class PageObject(DictionaryObject):
     # @param tx    The translation on X axis
     # @param ty    The translation on Y axis
     # @param rotation The angle of the rotation, in degrees
-    def mergeRotatedAroundPointPage(self, page2, rotation, tx, ty):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeRotatedAroundPointPage(self, page2, rotation, tx, ty, expand=False):
         translation = [[1, 0, 0],
                        [0, 1, 0],
                        [-tx,-ty,1]]
@@ -1613,7 +1770,7 @@ class PageObject(DictionaryObject):
 
         return self.mergeTransformedPage(page2, [ctm[0][0], ctm[0][1],
                                                  ctm[1][0], ctm[1][1],
-                                                 ctm[2][0], ctm[2][1]])
+                                                 ctm[2][0], ctm[2][1]], expand)
 
     ##
     # This is similar to mergePage, but the stream to be merged is rotated
@@ -1622,7 +1779,9 @@ class PageObject(DictionaryObject):
     # @param page2 An instance of {@link #PageObject PageObject} to be merged.
     # @param rotation The angle of the rotation, in degrees
     # @param factor The scaling factor
-    def mergeRotatedScaledPage(self, page2, rotation, scale):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeRotatedScaledPage(self, page2, rotation, scale, expand=False):
         rotation = math.radians(rotation)
         rotating = [[math.cos(rotation), math.sin(rotation),0],
                     [-math.sin(rotation),math.cos(rotation), 0],
@@ -1635,7 +1794,7 @@ class PageObject(DictionaryObject):
         return self.mergeTransformedPage(page2,
                                          [ctm[0][0], ctm[0][1],
                                           ctm[1][0], ctm[1][1],
-                                          ctm[2][0], ctm[2][1]])
+                                          ctm[2][0], ctm[2][1]], expand)
 
     ##
     # This is similar to mergePage, but the stream to be merged is translated
@@ -1645,7 +1804,9 @@ class PageObject(DictionaryObject):
     # @param scale The scaling factor
     # @param tx    The translation on X axis
     # @param tx    The translation on Y axis
-    def mergeScaledTranslatedPage(self, page2, scale, tx, ty):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeScaledTranslatedPage(self, page2, scale, tx, ty, expand=False):
         translation = [[1, 0, 0],
                        [0, 1, 0],
                        [tx,ty,1]]
@@ -1656,7 +1817,7 @@ class PageObject(DictionaryObject):
 
         return self.mergeTransformedPage(page2, [ctm[0][0], ctm[0][1],
                                                  ctm[1][0], ctm[1][1],
-                                                 ctm[2][0], ctm[2][1]])
+                                                 ctm[2][0], ctm[2][1]], expand)
 
     ##
     # This is similar to mergePage, but the stream to be merged is translated,
@@ -1667,7 +1828,9 @@ class PageObject(DictionaryObject):
     # @param ty    The translation on Y axis
     # @param rotation The angle of the rotation, in degrees
     # @param scale The scaling factor
-    def mergeRotatedScaledTranslatedPage(self, page2, rotation, scale, tx, ty):
+    # @param expand Whether the page should be expanded to fit the dimensions
+    #               of the page to be merged
+    def mergeRotatedScaledTranslatedPage(self, page2, rotation, scale, tx, ty, expand=False):
         translation = [[1, 0, 0],
                        [0, 1, 0],
                        [tx,ty,1]]
@@ -1683,7 +1846,7 @@ class PageObject(DictionaryObject):
 
         return self.mergeTransformedPage(page2, [ctm[0][0], ctm[0][1],
                                                  ctm[1][0], ctm[1][1],
-                                                 ctm[2][0], ctm[2][1]])
+                                                 ctm[2][0], ctm[2][1]], expand)
 
     ##
     # Applys a transformation matrix the page.
@@ -1729,9 +1892,9 @@ class PageObject(DictionaryObject):
     # @param width The new width
     # @param height The new heigth
     def scaleTo(self, width, height):
-        sx = width / (self.mediaBox.getUpperRight_x() -
+        sx = width / float(self.mediaBox.getUpperRight_x() -
                       self.mediaBox.getLowerLeft_x())
-        sy = height / (self.mediaBox.getUpperRight_y() -
+        sy = height / float(self.mediaBox.getUpperRight_y() -
                        self.mediaBox.getLowerLeft_x())
         self.scale(sx, sy)
 
@@ -1910,9 +2073,16 @@ class ContentStream(DecodedStreamObject):
         while True:
             tok = stream.read(1)
             if tok == "E":
-                next = stream.read(1)
-                if next == "I":
-                    break
+                # Check for End Image
+                next1 = stream.read(1)
+                if next1 == "I":
+                    next2 = readNonWhitespace(stream)
+                    if next2 == 'Q':
+                        stream.seek(-1, 1)
+                        break
+                    else:
+                        stream.seek(-2,1)
+                        data += tok
                 else:
                     stream.seek(-1, 1)
                     data += tok
@@ -2165,23 +2335,3 @@ def _alg35(password, rev, keylen, owner_entry, p_entry, id1_entry, metadata_encr
     # mean, so I have used null bytes.  This seems to match a few other
     # people's implementations)
     return val + (b_('\x00') * 16), key
-
-#if __name__ == "__main__":
-#    output = PdfFileWriter()
-#
-#    input1 = PdfFileReader(file("test\\5000-s1-05e.pdf", "rb"))
-#    page1 = input1.getPage(0)
-#
-#    input2 = PdfFileReader(file("test\\PDFReference16.pdf", "rb"))
-#    page2 = input2.getPage(0)
-#    page3 = input2.getPage(1)
-#    page1.mergePage(page2)
-#    page1.mergePage(page3)
-#
-#    input3 = PdfFileReader(file("test\\cc-cc.pdf", "rb"))
-#    page1.mergePage(input3.getPage(0))
-#
-#    page1.compressContentStreams()
-#
-#    output.addPage(page1)
-#    output.write(file("test\\merge-test.pdf", "wb"))

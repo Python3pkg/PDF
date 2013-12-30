@@ -67,7 +67,11 @@ class FlateDecode(object):
         data = decompress(data)
         predictor = 1
         if decodeParms:
-            predictor = decodeParms.get("/Predictor", 1)
+            try:
+                predictor = decodeParms.get("/Predictor", 1)
+            except AttributeError:
+                pass    # usually an array with a null object was read
+            
         # predictor 1 == no predictor
         if predictor != 1:
             columns = decodeParms["/Columns"]
@@ -285,20 +289,3 @@ def decodeStreamData(stream):
             # unsupported filter
             raise NotImplementedError("unsupported filter %s" % filterType)
     return data
-
-if __name__ == "__main__":
-    assert "abc" == ASCIIHexDecode.decode('61\n626\n3>')
-
-    ascii85Test = """
-     <~9jqo^BlbD-BleB1DJ+*+F(f,q/0JhKF<GL>Cj@.4Gp$d7F!,L7@<6@)/0JDEF<G%<+EV:2F!,
-     O<DJ+*.@<*K0@<6L(Df-\\0Ec5e;DffZ(EZee.Bl.9pF"AGXBPCsi+DGm>@3BB/F*&OCAfu2/AKY
-     i(DIb:@FD,*)+C]U=@3BN#EcYf8ATD3s@q?d$AftVqCh[NqF<G:8+EV:.+Cf>-FD5W8ARlolDIa
-     l(DId<j@<?3r@:F%a+D58'ATD4$Bl@l3De:,-DJs`8ARoFb/0JMK@qB4^F!,R<AKZ&-DfTqBG%G
-     >uD.RTpAKYo'+CT/5+Cei#DII?(E,9)oF*2M7/c~>
-    """
-    ascii85_originalText="Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."
-
-
-    assert ASCII85Decode.decode(ascii85Test) == ascii85_originalText
-
-

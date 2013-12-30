@@ -178,6 +178,18 @@ class PdfFileMerger(object):
         self.inputs = []
         self.output = None
 
+    def addMetadata(self, infos):
+        """See addMetadata method in PdfFileWriter class"""
+        self.output.addMetadata(infos)
+
+    def setPageLayout(self, layout):
+        """See setPageLayout() methods in pdf.py"""
+        self.output.setPageLayout(layout)
+
+    def setPageMode(self, mode):
+        """See setPageMode() methods in pdf.py"""
+        self.output.setPageMode(mode)
+
     def _trim_dests(self, pdf, dests, pages):
         """
         Removes any named destinations that are not a part of the specified page set
@@ -270,7 +282,6 @@ class PdfFileMerger(object):
                             else:
                                 args.append(FloatObject(0))
                             if '/Zoom' in b and not isinstance(b['/Zoom'], NullObject):
-                                print('*************', b, '******************')
                                 args.append(FloatObject(b['/Zoom']))
                             else:
                                 args.append(FloatObject(0))
@@ -384,7 +395,7 @@ class PdfFileMerger(object):
                 bmparent[npos].append(dest)
             else:
                 bmparent.insert(npos, [dest])
-
+        return dest
     def addNamedDestination(self, title, pagenum):
         """
         Add a destination to the pdf, using the specified title and pointing
