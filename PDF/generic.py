@@ -10,7 +10,6 @@ from . import filters
 from . import utils
 import decimal
 import codecs
-#import debugging
 
 def readObject(stream, pdf):
     tok = stream.read(1)
