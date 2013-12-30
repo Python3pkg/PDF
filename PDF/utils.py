@@ -1,8 +1,6 @@
 """
 Utility functions for PDF library.
 """
-__author__ = "Mathieu Fenniak"
-__author_email__ = "biziqe@mathieu.fenniak.net"
 
 #ENABLE_PSYCO = False
 #if ENABLE_PSYCO:

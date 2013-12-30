@@ -22,9 +22,6 @@ from .generic import *
 from .utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
 from .utils import b_
 
-__author__ = "Mathieu Fenniak"
-__author_email__ = "biziqe@mathieu.fenniak.net"
-
 warnings.formatwarning = utils._formatwarning
 
 import __builtin__
