@@ -2,19 +2,6 @@
 Utility functions for PDF library.
 """
 
-#ENABLE_PSYCO = False
-#if ENABLE_PSYCO:
-#    try:
-#        import psyco
-#    except ImportError:
-#        ENABLE_PSYCO = False
-#
-#if not ENABLE_PSYCO:
-#    class psyco:
-#        def proxy(func):
-#            return func
-#        proxy = staticmethod(proxy)
-
 #custom implementation of warnings.formatwarning
 def _formatwarning(message, category, filename, lineno, line=None):
     file = filename.replace("/","\\").rsplit("\\",1)[1] # find the file name
