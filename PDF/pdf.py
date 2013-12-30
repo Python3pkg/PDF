@@ -14,6 +14,8 @@ import random
 import io
 from hashlib import md5
 
+import six
+
 from . import utils
 from .utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
 from .utils import b_
@@ -214,7 +216,7 @@ class PdfFileWriter(object):
         # we sweep for indirect references.  This forces self-page-referencing
         # trees to reference the correct new object location, rather than
         # copying in a new copy of the page object.
-        for objIndex in xrange(len(self._objects)):
+        for objIndex in six.moves.range(len(self._objects)):
             obj = self._objects[objIndex]
             if isinstance(obj, PageObject) and obj.indirectRef is not None:
                 data = obj.indirectRef
@@ -512,7 +514,7 @@ class PdfFileReader(object):
         self.xrefIndex = 0
         if hasattr(stream, 'mode') and 'b' not in stream.mode:
             warnings.warn("PdfFileReader stream/file object is not in binary mode. It may not be read correctly.", utils.PdfReadWarning)
-        if type(stream) in (str, unicode):
+        if type(stream) in six.string_types:
             fileobj = open(stream,'rb')
             stream = io.BytesIO(fileobj.read())
             fileobj.close()
@@ -724,7 +726,7 @@ class PdfFileReader(object):
         if dest:
             if isinstance(dest, ArrayObject):
                 outline = self._buildDestination(title, dest)
-            elif isinstance(dest, unicode) and dest in self._namedDests:
+            elif isinstance(dest, six.text_type) and dest in self._namedDests:
                 outline = self._namedDests[dest]
                 outline[NameObject("/Title")] = title
             else:
@@ -777,10 +779,10 @@ class PdfFileReader(object):
         debug = False
         stmnum,idx = self.xref_objStm[indirectReference.idnum]
         if debug:
-            print("Here1: %s %s"%(stmnum, idx))
+            print("Here1: %s %s" % (stmnum, idx))
         objStm = IndirectObject(stmnum, 0, self).getObject()
         if debug:
-            print("Here2: objStm=%s.. stmnum=%s data=%s"%(objStm, stmnum, objStm.getData()))
+            print("Here2: objStm=%s.. stmnum=%s data=%s" % (objStm, stmnum, objStm.getData()))
         # This is an xref to a stream, so its type better be a stream
         assert objStm['/Type'] == '/ObjStm'
         # /N is the number of indirect objects in the stream
@@ -816,7 +818,7 @@ class PdfFileReader(object):
                       (i, indirectReference.idnum,indirectReference.generation, e.message), utils.PdfReadWarning)
 
                 if self.strict:
-                    raise utils.PdfReadError("Can't read object stream: %s"%e)
+                    raise utils.PdfReadError("Can't read object stream: %s" % e)
                 # Replace with null. Hopefully it's nothing important.
                 obj = NullObject()
             return obj
@@ -869,8 +871,8 @@ class PdfFileReader(object):
                 key = md5_hash[:min(16, len(self._decryption_key) + 5)]
                 retval = self._decryptObject(retval, key)
         else:
-            warnings.warn("Object %d %d not defined."%(indirectReference.idnum,
-                        indirectReference.generation), utils.PdfReadWarning)
+            warnings.warn("Object %d %d not defined." % (indirectReference.idnum,
+                indirectReference.generation), utils.PdfReadWarning)
             #if self.strict:
             raise utils.PdfReadError("Could not find object.")
         self.cacheIndirectObject(indirectReference.generation,
@@ -916,15 +918,15 @@ class PdfFileReader(object):
         debug = False
         out = self.resolvedObjects.get((generation, idnum))
         if debug and out:
-            print("cache hit: %d %d"%(idnum, generation))
+            print("cache hit: %d %d" % (idnum, generation))
         elif debug:
-            print("cache miss: %d %d"%(idnum, generation))
+            print("cache miss: %d %d" % (idnum, generation))
         return out
 
     def cacheIndirectObject(self, generation, idnum, obj):
         # return None # Sometimes we want to turn off cache for debugging.
         if (generation, idnum) in self.resolvedObjects:
-            msg = "Overwriting cache for %s %s"%(generation, idnum)
+            msg = "Overwriting cache for %s %s" % (generation, idnum)
             if self.strict: raise utils.PdfReadError(msg)
             else:           warnings.warn(msg)
         self.resolvedObjects[(generation, idnum)] = obj
@@ -1052,7 +1054,7 @@ class PdfFileReader(object):
                 # none create one subsection that spans everything.
                 idx_pairs = xrefstream.get("/Index", [0, xrefstream.get("/Size")])
                 if debug:
-                    print("read idx_pairs=%s"%list(self._pairs(idx_pairs)))
+                    print("read idx_pairs=%s" % list(self._pairs(idx_pairs)))
                 entrySizes = xrefstream.get("/W")
                 assert len(entrySizes) >= 3
                 if self.strict and len(entrySizes) > 3:
@@ -1082,7 +1084,7 @@ class PdfFileReader(object):
                     # The subsections must increase
                     assert start >= last_end
                     last_end = start + size
-                    for num in xrange(start, start+size):
+                    for num in six.moves.range(start, start+size):
                         # The first entry is the type
                         xref_type = getEntry(0)
                         # The rest of the elements depend on the xref_type
@@ -1099,7 +1101,7 @@ class PdfFileReader(object):
                             if not used_before(num, generation):
                                 self.xref[generation][num] = byte_offset
                                 if debug:
-                                    print("XREF Uncompressed: %s %s"%(
+                                    print("XREF Uncompressed: %s %s" % (
                                                 num, generation))
                         elif xref_type == 2:
                             # compressed objects
@@ -1108,7 +1110,7 @@ class PdfFileReader(object):
                             generation = 0 # PDF spec table 18, generation is 0
                             if not used_before(num, generation):
                                 if debug:
-                                    print("XREF Compressed: %s %s %s"%(
+                                    print("XREF Compressed: %s %s %s" % (
                                         num, objstr_num, obstr_idx))
                                 self.xref_objStm[num] = (objstr_num, obstr_idx)
                         elif self.strict:
@@ -1172,7 +1174,7 @@ class PdfFileReader(object):
         while True:
             x = stream.read(1)
             if debug:
-                print("  x:",x,"%x"%ord(x))
+                print("  x:",x,"%x" % ord(x))
             stream.seek(-2, 1)
             if x == b_('\n') or x == b_('\r'): # \n = LF; \r = CR
                 crlf = False
