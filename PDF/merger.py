@@ -2,6 +2,8 @@ from __future__ import print_function
 
 import io
 
+import six
+
 from .generic import (DictionaryObject, NameObject, NumberObject, ArrayObject,
     createStringObject, TreeObject, Destination, NullObject, TextStringObject,
     FloatObject, Bookmark)
@@ -63,7 +65,7 @@ class PdfFileMerger(object):
         # it is a PdfFileReader, copy that reader's stream into a
         # StringIO stream.
         # If fileobj is none of the above types, it is not modified
-        if type(fileobj) in (str, unicode):
+        if type(fileobj) in six.string_types:
             fileobj = file(fileobj, 'rb')
             my_file = True
         elif type(fileobj) == file:
