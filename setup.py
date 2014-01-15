@@ -31,7 +31,6 @@ setup_params = dict(
     packages=["PDF"],
     install_requires=["six"],
     setup_requires=['hgtools'],
-    use_2to3=True,
 )
 
 if __name__ == '__main__':
