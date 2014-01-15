@@ -71,7 +71,7 @@ class FlateDecode(object):
                 predictor = decodeParms.get("/Predictor", 1)
             except AttributeError:
                 pass    # usually an array with a null object was read
-            
+
         # predictor 1 == no predictor
         if predictor != 1:
             columns = decodeParms["/Columns"]
@@ -82,7 +82,7 @@ class FlateDecode(object):
                 rowlength = columns + 1
                 assert len(data) % rowlength == 0
                 prev_rowdata = (0,) * rowlength
-                for row in xrange(len(data) / rowlength):
+                for row in range(len(data) / rowlength):
                     rowdata = [ord(x) for x in data[(row*rowlength):((row+1)*rowlength)]]
                     filterByte = rowdata[0]
                     if filterByte == 0:
