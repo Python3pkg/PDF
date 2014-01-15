@@ -4,6 +4,7 @@ Implementation of generic PDF objects (dictionary, number, string, and so on)
 
 import re
 import warnings
+import logging
 
 from .utils import readNonWhitespace, RC4_encrypt
 from .utils import b_, u_, chr_, ord_
@@ -12,6 +13,8 @@ from . import filters
 from . import utils
 import decimal
 import codecs
+
+log = logging.getLogger(__name__)
 
 def readObject(stream, pdf):
     tok = stream.read(1)
@@ -421,8 +424,7 @@ class NameObject(str, PdfObject):
         stream.write(b_(self))
 
     def readFromStream(stream):
-        debug = False
-        if debug: print stream.tell()
+        log.debug("%s", stream.tell())
         name = stream.read(1)
         if name != b_("/"):
             raise utils.PdfReadError, "name read error"
@@ -435,7 +437,7 @@ class NameObject(str, PdfObject):
                 stream.seek(-1, 1)
                 break
             name += tok
-        if debug: print name
+        log.debug(name)
         return NameObject(name.decode('utf-8'))
     readFromStream = staticmethod(readFromStream)
 
@@ -519,7 +521,6 @@ class DictionaryObject(dict, PdfObject):
         stream.write(b_(">>"))
 
     def readFromStream(stream, pdf):
-        debug = False
         tmp = stream.read(2)
         if tmp != b_("<<"):
             raise utils.PdfReadError, \
@@ -533,7 +534,7 @@ class DictionaryObject(dict, PdfObject):
                 # stream has truncated prematurely
                 raise PdfStreamError("Stream has ended unexpectedly")
 
-            if debug: print "Tok:",tok
+            log.debug("Tok: %s", tok)
             if tok == b_(">"):
                 stream.read(1)
                 break
@@ -563,14 +564,14 @@ class DictionaryObject(dict, PdfObject):
             # this is a stream object, not a dictionary
             assert data.has_key("/Length")
             length = data["/Length"]
-            if debug: print data
+            log.debug(data)
             if isinstance(length, IndirectObject):
                 t = stream.tell()
                 length = pdf.getObject(length)
                 stream.seek(t, 0)
             data["__streamdata__"] = stream.read(length)
-            if debug: print "here"
-            #if debug: print debugging.printAsHex(data["__streamdata__"])
+            log.debug("here")
+            #log.debug(debugging.printAsHex(data["__streamdata__"]))
             e = readNonWhitespace(stream)
             ndstream = stream.read(8)
             if (e + ndstream) != b_("endstream"):
@@ -591,7 +592,7 @@ class DictionaryObject(dict, PdfObject):
                         warnings.warn("Ignoring missing endstream. This could affect PDF output.")
                         pass
                     else:
-                        if debug: print "E", e, ndstream, debugging.toHex(end)
+                        log.debug("E%s%s%s", e, ndstream, debugging.toHex(end))
                         stream.seek(pos, 0)
                         raise utils.PdfReadError, \
                             ("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
@@ -802,7 +803,7 @@ class EncodedStreamObject(StreamObject):
         else:
             # create decoded object
             decoded = DecodedStreamObject()
-            
+
             decoded._data = filters.decodeStreamData(self)
             for key, value in self.items():
                 if not key in ("/Length", "/Filter", "/DecodeParms"):
