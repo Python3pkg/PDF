@@ -1281,8 +1281,8 @@ class PdfFileReader(object):
 
     def _zeroXref(self, generation):
         self.xref[generation] = dict(
-            (k-self.xrefIndex,v)
-            for (k,v) in self.xref[generation].iteritems())
+            (k-self.xrefIndex, v)
+            for (k,v) in six.iteritems(self.xref[generation]))
 
     def _pairs(self, array):
         i = 0
