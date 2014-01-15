@@ -427,7 +427,7 @@ class NameObject(str, PdfObject):
         log.debug("%s", stream.tell())
         name = stream.read(1)
         if name != b_("/"):
-            raise utils.PdfReadError, "name read error"
+            raise utils.PdfReadError("name read error")
         while True:
             tok = stream.read(1)
             if not tok:
@@ -523,8 +523,8 @@ class DictionaryObject(dict, PdfObject):
     def readFromStream(stream, pdf):
         tmp = stream.read(2)
         if tmp != b_("<<"):
-            raise utils.PdfReadError, \
-                ("Dictionary read error at byte %s: stream must begin with '<<'" % utils.hexStr(stream.tell()))
+            raise utils.PdfReadError(
+                "Dictionary read error at byte %s: stream must begin with '<<'" % utils.hexStr(stream.tell()))
         data = {}
         while True:
             tok = readNonWhitespace(stream)
@@ -545,7 +545,7 @@ class DictionaryObject(dict, PdfObject):
             value = readObject(stream, pdf)
             if data.has_key(key):
                 # multiple definitions of key not permitted
-                raise utils.PdfReadError, ("Multiple definitions in dictionary at byte %s for key %s" \
+                raise utils.PdfReadError("Multiple definitions in dictionary at byte %s for key %s" \
                                            % (utils.hexStr(stream.tell()), key))
             data[key] = value
         pos = stream.tell()
@@ -594,8 +594,8 @@ class DictionaryObject(dict, PdfObject):
                     else:
                         log.debug("E%s%s%s", e, ndstream, debugging.toHex(end))
                         stream.seek(pos, 0)
-                        raise utils.PdfReadError, \
-                            ("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
+                        raise utils.PdfReadError(
+                            "Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
         else:
             stream.seek(pos, 0)
         if data.has_key("__streamdata__"):
@@ -656,9 +656,9 @@ class TreeObject(DictionaryObject):
         childObj = child.getObject()
 
         if not childObj.has_key(NameObject('/Parent')):
-            raise ValueError, "Removed child does not appear to be a tree item"
+            raise ValueError("Removed child does not appear to be a tree item")
         elif childObj[NameObject('/Parent')] != self:
-            raise ValueError, "Removed child is not a member of this tree"
+            raise ValueError("Removed child is not a member of this tree")
 
         found = False
         prevRef = None
@@ -713,7 +713,7 @@ class TreeObject(DictionaryObject):
                 cur = None
 
         if not found:
-            raise ValueError, "Removal couldn't find item in tree"
+            raise ValueError("Removal couldn't find item in tree")
 
         del childObj[NameObject('/Parent')]
         if childObj.has_key(NameObject('/Next')):
@@ -812,7 +812,7 @@ class EncodedStreamObject(StreamObject):
             return decoded._data
 
     def setData(self, data):
-        raise utils.PdfReadError, "Creating EncodedStreamObject is not currently supported"
+        raise utils.PdfReadError("Creating EncodedStreamObject is not currently supported")
 
 
 class RectangleObject(ArrayObject):
