@@ -26,11 +26,8 @@ from .generic import (DictionaryObject, NameObject, NumberObject, ArrayObject,
 
 warnings.formatwarning = utils._formatwarning
 
-import __builtin__
-
 log = logging.getLogger(__name__)
 
-__builtin__.UserWarning
 ##
 # This class supports writing PDF files out, given pages produced by another
 # class (typically {@link #PdfFileReader PdfFileReader}).
