@@ -1,7 +1,7 @@
 import re
 import datetime
 import decimal
-from generic import PdfObject
+from .generic import PdfObject
 from xml.dom import getDOMImplementation
 from xml.dom.minidom import parseString
 
@@ -296,7 +296,7 @@ class XmpInformation(PdfObject):
     # time are returned as a UTC datetime.datetime object.
     # <p>Stability: Added in v1.12, will exist for all future v1.x releases.
     xmp_createDate = property(_getter_single(XMP_NAMESPACE, "CreateDate", _converter_date))
-    
+
     ##
     # The date and time the resource was last modified.  The date and time
     # are returned as a UTC datetime.datetime object.

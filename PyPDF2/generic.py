@@ -35,15 +35,17 @@ __author__ = "Mathieu Fenniak"
 __author_email__ = "biziqe@mathieu.fenniak.net"
 
 import re
-from utils import readNonWhitespace, RC4_encrypt
-from utils import b_, u_, chr_, ord_
-from utils import PdfStreamError
+from .utils import readNonWhitespace, RC4_encrypt
+from .utils import b_, u_, chr_, ord_
+from .utils import PdfStreamError
 import warnings
 import filters
-import utils
+from . import utils
 import decimal
 import codecs
 #import debugging
+
+from . import xmp
 
 def readObject(stream, pdf):
     tok = stream.read(1)
@@ -225,10 +227,10 @@ class FloatObject(decimal.Decimal, PdfObject):
         else:
             # XXX: this adds useless extraneous zeros.
             return "%.5f" % self
-            
+
     def as_numeric(self):
         return float(b_(repr(self)))
-        
+
     def writeToStream(self, stream, encryption_key):
         stream.write(b_(repr(self)))
 
@@ -236,7 +238,7 @@ class FloatObject(decimal.Decimal, PdfObject):
 class NumberObject(int, PdfObject):
     def __init__(self, value):
         int.__init__(value)
-        
+
     def as_numeric(self):
         return int(b_(repr(self)))
 
@@ -528,7 +530,6 @@ class DictionaryObject(dict, PdfObject):
         if metadata == None:
             return None
         metadata = metadata.getObject()
-        import xmp
         if not isinstance(metadata, xmp.XmpInformation):
             metadata = xmp.XmpInformation(metadata)
             self[NameObject("/Metadata")] = metadata
@@ -640,29 +641,29 @@ class DictionaryObject(dict, PdfObject):
 class TreeObject(DictionaryObject):
     def __init__(self):
         DictionaryObject.__init__(self)
-        
+
     def hasChildren(self):
         return self.has_key('/First')
-    
+
     def __iter__(self):
         return self.children()
-        
+
     def children(self):
         if not self.hasChildren():
             raise StopIteration
-            
+
         child = self['/First']
         while True:
             yield child
             if child == self['/Last']:
                 raise StopIteration
             child = child['/Next']
-        
+
     def addChild(self, child, pdf):
         childObj = child.getObject()
         child = pdf.getReference(childObj)
         assert isinstance(child, IndirectObject)
-        
+
         if not self.has_key('/First'):
             self[NameObject('/First')] = child
             self[NameObject('/Count')] = NumberObject(0)
@@ -682,22 +683,22 @@ class TreeObject(DictionaryObject):
         parentRef = pdf.getReference(self)
         assert isinstance(parentRef, IndirectObject)
         childObj[NameObject('/Parent')] = parentRef
-        
+
     def removeChild(self, child):
         childObj = child.getObject()
-        
+
         if not childObj.has_key(NameObject('/Parent')):
             raise ValueError, "Removed child does not appear to be a tree item"
         elif childObj[NameObject('/Parent')] != self:
             raise ValueError, "Removed child is not a member of this tree"
-        
+
         found = False
         prevRef = None
         prev = None
         curRef = self[NameObject('/First')]
         cur = curRef.getObject()
         lastRef = self[NameObject('/Last')]
-        last = lastRef.getObject() 
+        last = lastRef.getObject()
         while cur != None:
             if cur == childObj:
                 if prev == None:
@@ -708,7 +709,7 @@ class TreeObject(DictionaryObject):
                         del next[NameObject('/Prev')]
                         self[NameObject('/First')] = nextRef
                         self[NameObject('/Count')] = self[NameObject('/Count')] - 1
-                        
+
                     else:
                         # Removing only tree node
                         assert self[NameObject('/Count')] == 1
@@ -731,9 +732,9 @@ class TreeObject(DictionaryObject):
                         self[NameObject('/Last')] = prevRef
                         self[NameObject('/Count')] = self[NameObject('/Count')] - 1
                 found = True
-                break        
-                    
-            
+                break
+
+
             prevRef = curRef
             prev = cur
             if cur.has_key(NameObject('/Next')):
@@ -742,10 +743,10 @@ class TreeObject(DictionaryObject):
             else:
                 curRef = None
                 cur = None
-       
+
         if not found:
             raise ValueError, "Removal couldn't find item in tree"
-       
+
         del childObj[NameObject('/Parent')]
         if childObj.has_key(NameObject('/Next')):
             del childObj[NameObject('/Next')]
@@ -834,7 +835,7 @@ class EncodedStreamObject(StreamObject):
         else:
             # create decoded object
             decoded = DecodedStreamObject()
-            
+
             decoded._data = filters.decodeStreamData(self)
             for key, value in self.items():
                 if not key in ("/Length", "/Filter", "/DecodeParms"):
@@ -875,7 +876,7 @@ class RectangleObject(ArrayObject):
 
     def getUpperLeft_x(self):
         return self.getLowerLeft_x()
-    
+
     def getUpperLeft_y(self):
         return self.getUpperRight_y()
 
@@ -931,7 +932,7 @@ class Destination(TreeObject):
         self[NameObject("/Title")] = title
         self[NameObject("/Page")] = page
         self[NameObject("/Type")] = typ
-        
+
         # from table 8.2 of the PDF 1.6 reference.
         if typ == "/XYZ":
             (self[NameObject("/Left")], self[NameObject("/Top")],
@@ -947,10 +948,10 @@ class Destination(TreeObject):
             pass
         else:
             raise utils.PdfReadError("Unknown Destination Type: %r" % typ)
-            
+
     def getDestArray(self):
         return ArrayObject([self.raw_get('/Page'), self['/Type']] + [self[x] for x in ['/Left','/Bottom','/Right','/Top','/Zoom'] if self.has_key(x)])
-        
+
     def writeToStream(self, stream, encryption_key):
         stream.write(b_("<<\n"))
         key = NameObject('/D')
@@ -964,10 +965,10 @@ class Destination(TreeObject):
         stream.write(b_(" "))
         value = NameObject("/GoTo")
         value.writeToStream(stream, encryption_key)
-        
+
         stream.write(b_("\n"))
         stream.write(b_(">>"))
-         
+
     ##
     # Read-only property accessing the destination title.
     # @return A string.
@@ -1007,7 +1008,7 @@ class Destination(TreeObject):
     # Read-only property accessing the bottom vertical coordinate.
     # @return A number, or None if not available.
     bottom = property(lambda self: self.get("/Bottom", None))
-        
+
 
 class Bookmark(Destination):
     def writeToStream(self, stream, encryption_key):
@@ -1025,8 +1026,8 @@ class Bookmark(Destination):
         value.writeToStream(stream, encryption_key)
         stream.write(b_("\n"))
         stream.write(b_(">>"))
-        
- 
+
+
 def encode_pdfdocencoding(unicode_string):
     retval = b_('')
     for c in unicode_string:
