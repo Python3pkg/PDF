@@ -48,7 +48,7 @@ class PdfFileWriter(object):
         # info object
         info = DictionaryObject()
         info.update({
-                NameObject("/Producer"): createStringObject(codecs.BOM_UTF16_BE + u"PyPDF2".encode('utf-16be'))
+                NameObject("/Producer"): createStringObject(codecs.BOM_UTF16_BE + "PyPDF2".encode('utf-16be'))
                 })
         self._info = self._addObject(info)
 
@@ -282,14 +282,14 @@ class PdfFileWriter(object):
         Example: {u'/Title': u'My title'}
         """
         args = {}
-        for key, value in infos.items():
+        for key, value in list(infos.items()):
             args[NameObject(key)] = createStringObject(value)
         self.getObject(self._info).update(args)
 
     def _sweepIndirectReferences(self, externMap, data):
         log.debug("%s TYPE %s", data, data.__class__.__name__)
         if isinstance(data, DictionaryObject):
-            for key, value in data.items():
+            for key, value in list(data.items()):
                 value = self._sweepIndirectReferences(externMap, value)
                 if isinstance(value, StreamObject):
                     # a dictionary value is a stream.  streams must be indirect
@@ -410,13 +410,13 @@ class PdfFileWriter(object):
 
     def addBookmarkDict(self, bookmark, parent=None):
         bookmarkObj = TreeObject()
-        for k, v in bookmark.items():
+        for k, v in list(bookmark.items()):
             bookmarkObj[NameObject(str(k))] = v
         bookmarkObj.update(bookmark)
 
         if '/A' in bookmark:
             action = DictionaryObject()
-            for k, v in bookmark['/A'].items():
+            for k, v in list(bookmark['/A'].items()):
                 action[NameObject(str(k))] = v
             actionRef = self._addObject(action)
             bookmarkObj[NameObject('/A')] = actionRef
@@ -493,7 +493,7 @@ class PdfFileWriter(object):
         pages = self.getObject(self._pages)['/Kids']
         for page in pages:
             pageRef = self.getObject(page)
-            if pageRef.has_key("/Annots"):
+            if "/Annots" in pageRef:
                 del pageRef['/Annots']
 
     def addLink(self, pagenum, pagedest, rect, zoom='/FitV'):
@@ -516,7 +516,7 @@ class PdfFileWriter(object):
         })
         lnkRef = self._addObject(lnk)
 
-        if pageRef.has_key("/Annots"):
+        if "/Annots" in pageRef:
             pageRef['/Annots'].append(lnkRef)
         else:
             pageRef[NameObject('/Annots')] = ArrayObject([lnkRef])
@@ -905,7 +905,7 @@ class PdfFileReader(object):
                     addt["indirectRef"] = page
                 self._flatten(page.getObject(), inherit, **addt)
         elif t == "/Page":
-            for attr,value in inherit.items():
+            for attr,value in list(inherit.items()):
                 # if the page has it's own value, it does not inherit the
                 # parent's value:
                 if attr not in pages:
@@ -1020,7 +1020,7 @@ class PdfFileReader(object):
         elif isinstance(obj, StreamObject):
             obj._data = utils.RC4_encrypt(key, obj._data)
         elif isinstance(obj, DictionaryObject):
-            for dictkey, value in obj.items():
+            for dictkey, value in list(obj.items()):
                 obj[dictkey] = self._decryptObject(value, key)
         elif isinstance(obj, ArrayObject):
             for i in range(len(obj)):
@@ -1164,7 +1164,7 @@ class PdfFileReader(object):
                 readNonWhitespace(stream)
                 stream.seek(-1, 1)
                 newTrailer = readObject(stream, self)
-                for key, value in newTrailer.items():
+                for key, value in list(newTrailer.items()):
                     if key not in self.trailer:
                         self.trailer[key] = value
                 if "/Prev" in newTrailer:
@@ -1513,7 +1513,7 @@ class PageObject(DictionaryObject):
         newRes.update(res1.get(resource, DictionaryObject()).getObject())
         page2Res = res2.get(resource, DictionaryObject()).getObject()
         renameRes = {}
-        for key in page2Res.keys():
+        for key in list(page2Res.keys()):
             if key in newRes and newRes[key] != page2Res[key]:
                 newname = NameObject(key + "renamed")
                 renameRes[key] = newname
@@ -1645,8 +1645,8 @@ class PageObject(DictionaryObject):
                         page2.mediaBox.getUpperRight_x().as_numeric(), page2.mediaBox.getUpperRight_y().as_numeric(),
                         page2.mediaBox.getLowerRight_x().as_numeric(), page2.mediaBox.getLowerRight_y().as_numeric()]
             if ctm is not None:
-                new_x = map(lambda i: ctm[0]*corners2[i] + ctm[2]*corners2[i+1] + ctm[4], range(0,8,2))
-                new_y = map(lambda i: ctm[1]*corners2[i] + ctm[3]*corners2[i+1] + ctm[5], range(0,8,2))
+                new_x = [ctm[0]*corners2[i] + ctm[2]*corners2[i+1] + ctm[4] for i in range(0,8,2)]
+                new_y = [ctm[1]*corners2[i] + ctm[3]*corners2[i+1] + ctm[5] for i in range(0,8,2)]
             else:
                 new_x = corners2[0:8:2]
                 new_y = corners2[1:8:2]
@@ -1897,7 +1897,7 @@ class PageObject(DictionaryObject):
     # be overhauled to provide more ordered text in the future.
     # @return a unicode string object
     def extractText(self):
-        text = u""
+        text = ""
         content = self["/Contents"].getObject()
         if not isinstance(content, ContentStream):
             content = ContentStream(content, self.pdf)

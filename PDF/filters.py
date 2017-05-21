@@ -264,7 +264,7 @@ class ASCII85Decode(object):
     decode = staticmethod(decode)
 
 def decodeStreamData(stream):
-    from generic import NameObject
+    from .generic import NameObject
     filters = stream.get("/Filter", ())
     if len(filters) and not isinstance(filters[0], NameObject):
         # we have a single filter instance

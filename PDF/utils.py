@@ -129,7 +129,7 @@ if sys.version_info[0] < 3:
         return s
 
     def u_(s):
-        return unicode(s, 'unicode_escape')
+        return str(s, 'unicode_escape')
 
     def str_(b):
         return str(b)
@@ -146,7 +146,7 @@ if sys.version_info[0] < 3:
     def hexencode(b):
         return b.encode('hex')
 
-    string_type = unicode
+    string_type = str
     bytes_type = str
 
     def is_file(ob):

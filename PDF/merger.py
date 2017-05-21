@@ -193,7 +193,7 @@ class PdfFileMerger(object):
         Removes any named destinations that are not a part of the specified page set
         """
         new_dests = []
-        for k, o in dests.items():
+        for k, o in list(dests.items()):
             for j in range(*pages):
                 if pdf.getPage(j).getObject() == o['/Page'].getObject():
                     o[NameObject('/Page')] = o['/Page'].getObject()
